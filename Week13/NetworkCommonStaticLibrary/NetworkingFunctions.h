@@ -8,6 +8,7 @@
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 #include <time.h>
+#include <stdbool.h>
 
 #define DISPLAYBUFFERSIZE	100
 #define SENDBUFFERSIZE	1000
@@ -29,6 +30,8 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET);
 void createPayload(char*);
 void RecvRequestAndSendResponse(SOCKET);
 void RecvUDPRequestAndSendResponse(SOCKET);
+bool handleReadAPI(char*);
+bool requestLineParser(char*, enum REQUEST_TYPE*, char*, enum PROTOCOL_TYPE*);
 
 //client only
 struct addrinfo* ConfigureRemoteAddress(char*, char*, PROTOCOL);

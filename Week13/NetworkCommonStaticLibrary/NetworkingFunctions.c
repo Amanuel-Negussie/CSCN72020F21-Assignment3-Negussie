@@ -213,8 +213,15 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
 
 
 
+
+
 					printf("received message (size: %d bytes) from %I64d\n", bytes_received, i);
 					char buffer[SENDBUFFERSIZE];
+
+
+					handleReadAPI(read);
+
+			
 					createPayload(buffer);
 					int bytes_sent = send(i, buffer, (int)strlen(buffer), 0);
 					printf("sent message (size: %d bytes) to %I64d\n", bytes_sent, i);
@@ -223,6 +230,139 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
 		}
 
 	}
+}
+
+enum PROTOCOL_TYPE {
+	HTTP_ONE_POINT_ONE,
+	HTTP_TWO
+}typedef PROTOCOL_TYPE;
+
+enum REQUEST_TYPE {
+	GET, 
+	POST,
+	PUT, 
+	DELETE_IT,
+}typedef REQUEST_TYPE;
+
+bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE* pV)
+{
+	char requestTypeString [BUFSIZ], * rP; 
+	rP = requestTypeString;
+	char protocolTypeString[BUFSIZ], * pP; 
+	pP = protocolTypeString;
+
+
+		while (*response != ' ')
+			*rP++ = *response++;
+		*rP = '\0';
+		response++;
+		while (*response != ' ')
+			*dP++ = *response++; 
+		*dP = '\0';
+		response++;
+		while (*response != '\n')
+			*pP++ = *response++; 
+		*pP = '\0';
+		
+		//parsing through REQUEST TYPES
+		if (memcmp(requestTypeString, "GET", sizeof("GET")) == 0)
+			*rT = GET;
+		else if (memcmp(requestTypeString, "POST", sizeof("POST")) == 0)
+			*rT = POST;
+		else if (memcmp(requestTypeString, "PUT", sizeof("PUT")) == 0)
+			*rT = PUT;
+		else if (memcmp(requestTypeString, "DELETE", sizeof("DELETE")) == 0)
+			*rT = DELETE_IT;
+		else
+			return false;
+		pP = protocolTypeString;
+		if (memcmp(pP, "HTTP/1.1", sizeof(pP)) == 0)
+			*pV = HTTP_ONE_POINT_ONE;
+		else if (memcmp(pP, "HTTP/2", sizeof(pP)) == 0)
+			*pV = HTTP_TWO;
+		else
+			return false;
+
+
+	
+	
+	return true;
+}
+bool handleReadAPI(char* info)
+{
+	//read read and choose which function to take 
+
+	//he request type, the document path, and the protocol version
+	REQUEST_TYPE requestType; 
+	char documentPath[BUFSIZ]; 
+	PROTOCOL_TYPE protocolVersion; 
+
+	// requestLineParser: error checking here for request Type as well as protocolVersion
+	if (!requestLineParser(info, &requestType, &documentPath, &protocolVersion))
+		return false;
+	//parse documentPath 
+	//notes.htm then get all of the notes 
+	//notes.htm/1 then you get note 1 
+	//notes.htm/2 then you get note 2 
+	//----> how many numbers 
+	// notes.htm/
+	//folder //
+
+
+
+	if (protocolVersion == HTTP_ONE_POINT_ONE)
+	{
+
+		//PROTOCOL VERSION HTTP 1.1 
+
+		//document path is the web page we're going to/ more importantly it's the type of data we want 
+		//requestType is either Get Get All Collections Set Put Delete 
+
+		if (memcmp(documentPath, "/notes.htm", sizeof("/notes.htm")) == 0)
+		{
+			switch (requestType)
+			{
+			case GET:
+				
+				break;
+			case POST: 
+				break;
+			case PUT: 
+				break; 
+			case DELETE_IT:
+				break;
+			}
+		}
+		else if (memcmp(documentPath, "/notes.htm", BUFSIZ) == 0)
+		{
+
+		}
+		else
+		{
+			//if message is GET time .... 
+			char buffer[SENDBUFFERSIZE];
+			createPayload(buffer);
+		}
+
+
+
+	}
+	else if (protocolVersion == HTTP_TWO)
+	{
+		printf("I'm sorry but we don't have HTTP 2 yet.");
+		return false;
+	}
+	else
+		return false;
+
+	
+
+
+	
+
+	//if message is GET time .... 
+	char buffer[SENDBUFFERSIZE];
+	createPayload(buffer);
 }
 
 
