@@ -154,25 +154,25 @@ SOCKET WaitForAndAcceptConnection(SOCKET socket_listen)
 }
 
 
-SOCKET WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
+void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
 {
 	fd_set master;			//create new FD_SET 
 	FD_ZERO(&master);		// initialize it all to 0 
 	FD_SET(socket_listen, &master); //add our (existing) listener socket to FD_SET
 	SOCKET max_socket = socket_listen;	//and this will be largest socket value 
+	SOCKET min_socket = max_socket; //this is our min_socket
 
 	while (1)
 	{
-		fd_set reads; 
-		reads = master; 
+		fd_set reads;
+		reads = master;
 		if (select((int)(max_socket + 1), &reads, 0, 0, 0) < 0)
 		{
 			fprintf(stderr, "select() failed exiting with an error of (%d)\n", WSAGetLastError());
 			exit(1);
 		}
-		SOCKET i; 
-
-		for (i = 1; i <= max_socket; ++i)
+		SOCKET i;
+		for (i = min_socket; i <= max_socket; ++i)
 		{
 			if (FD_ISSET(i, &reads))
 			{
@@ -188,8 +188,10 @@ SOCKET WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
 					}
 
 					FD_SET(socket_client, &master);
-					if (socket_client > max_socket)  //making sure we're expanding our set
+					if (socket_client > max_socket)  //update maximum range in set
 						max_socket = socket_client;
+					if (socket_client < min_socket)  //update minimum range in set
+						min_socket = socket_client;
 
 					//Displaying new connection 
 					char address_buffer[DISPLAYBUFFERSIZE];
@@ -203,21 +205,26 @@ SOCKET WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
 					int bytes_received = recv(i, read, SENDBUFFERSIZE, 0);
 					if (bytes_received < 1)  //in the event the client disappears during this time
 					{
-						FD_CLR(i, &master); 
+						FD_CLR(i, &master);
 						CloseSocketConnection(i);
 						continue;
 					}
 
-					printf("received message (size: %d bytes) from %I64d\n", bytes_received, i); 
+
+
+
+					printf("received message (size: %d bytes) from %I64d\n", bytes_received, i);
 					char buffer[SENDBUFFERSIZE];
-					createPayload(buffer); 
+					createPayload(buffer);
 					int bytes_sent = send(i, buffer, (int)strlen(buffer), 0);
 					printf("sent message (size: %d bytes) to %I64d\n", bytes_sent, i);
 				}
 			}
 		}
+
 	}
 }
+
 
 void createPayload(char* buffer)
 {

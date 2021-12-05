@@ -25,7 +25,7 @@ struct addrinfo* ConfigureLocalAddress(char*, PROTOCOL);
 SOCKET CreateBindListeningSocket(struct addrinfo*);
 void StartListeningForConnections(SOCKET);
 SOCKET WaitForAndAcceptConnection(SOCKET);
-SOCKET WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET);
+void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET);
 void createPayload(char*);
 void RecvRequestAndSendResponse(SOCKET);
 void RecvUDPRequestAndSendResponse(SOCKET);

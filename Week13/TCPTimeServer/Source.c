@@ -24,13 +24,8 @@ int main(void)
  
     printf("Waiting for connection...\n");
     //SOCKET socket_client = WaitForAndAcceptConnection(socket_listen);
-    SOCKET socket_client = WaitForAndAcceptAndHandleMultiplexedConnections(socket_listen); //Added in for multiplexed connections
-
-    printf("Client is connected...");
-    RecvRequestAndSendResponse(socket_client);
-
-    printf("Closing the connection...\n");
-    CloseSocketConnection(socket_client);
+    WaitForAndAcceptAndHandleMultiplexedConnections(socket_listen); //Added in for multiplexed connections
+  
 
     printf("Closing listening socket...\n");
     CloseSocketConnection(socket_listen);
