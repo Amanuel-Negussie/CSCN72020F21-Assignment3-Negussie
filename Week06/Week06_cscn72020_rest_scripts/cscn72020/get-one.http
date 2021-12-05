@@ -1,0 +1,3 @@
+// to get the entire collection, use GET on the base api
+GET http://172.16.10.139:5000/posts/1  HTTP/1.1
+content-type: application/json
