@@ -219,6 +219,7 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
 					char buffer[SENDBUFFERSIZE];
 
 
+
 					handleReadAPI(read);
 
 			
@@ -244,12 +245,15 @@ enum REQUEST_TYPE {
 	DELETE_IT,
 }typedef REQUEST_TYPE;
 
-bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE* pV)
+bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE* pV, int* index, char* query)
 {
 	char requestTypeString [BUFSIZ], * rP; 
 	rP = requestTypeString;
 	char protocolTypeString[BUFSIZ], * pP; 
 	pP = protocolTypeString;
+	char dpBuffer[BUFSIZ], * Buffer;
+	memset(dpBuffer, '\0', BUFSIZ * sizeof(char));
+	Buffer = dpBuffer;
 
 
 		while (*response != ' ')
@@ -257,7 +261,52 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 		*rP = '\0';
 		response++;
 		while (*response != ' ')
-			*dP++ = *response++; 
+		{
+			*Buffer= *response; 
+			if (*Buffer == '/')
+			{
+				for (int i = 0; i < strlen(dpBuffer); i++)
+				{
+					*dP = dpBuffer[i];  //go through Buffer and iterate through pointer
+					dP++;
+				}
+		
+				memset(dpBuffer, '\0', BUFSIZ * sizeof(char));
+				Buffer = &dpBuffer;
+			}
+			else
+			{
+				Buffer++;  //increase buffer 	
+			}
+			response++;
+		}
+		//check if buffer if buffer is a query or if its an index ? If not then add buffer to document path
+		Buffer = &dpBuffer;
+		char* endPointer = NULL;
+		int num = 0;
+		if ((*Buffer)!=NULL)
+		num = strtol(Buffer, endPointer, BASE_TEN);
+		if (*Buffer == '?') //query 
+		{
+			for (int i = 0; i < strlen(Buffer); i++)
+			{
+				*query++ = *(Buffer + i);
+			}
+			*query = '\0';
+		}
+		else if (num!= 0 && endPointer==Buffer+strlen(Buffer)) //index
+		{
+			*index = num; 
+		}
+		else
+		{
+			for (int i = 0; i < strlen(Buffer); i++)
+			{
+				*dP++ = *(Buffer + i);
+			}
+		}
+
+		//end dP correctly
 		*dP = '\0';
 		response++;
 		while (*response != '\n')
@@ -295,10 +344,16 @@ bool handleReadAPI(char* info)
 	//he request type, the document path, and the protocol version
 	REQUEST_TYPE requestType; 
 	char documentPath[BUFSIZ]; 
-	PROTOCOL_TYPE protocolVersion; 
+	char* dP = documentPath;
+	memset(documentPath, '\0', BUFSIZ * (sizeof(char)));
+	PROTOCOL_TYPE protocolVersion;
+	int index = 0;
+	char query[BUFSIZ], q; //extra bonus: query
+	q = query;
+
 
 	// requestLineParser: error checking here for request Type as well as protocolVersion
-	if (!requestLineParser(info, &requestType, &documentPath, &protocolVersion))
+	if (!requestLineParser(info, &requestType, dP, &protocolVersion, &index, q))
 		return false;
 	//parse documentPath 
 	//notes.htm then get all of the notes 
@@ -318,12 +373,19 @@ bool handleReadAPI(char* info)
 		//document path is the web page we're going to/ more importantly it's the type of data we want 
 		//requestType is either Get Get All Collections Set Put Delete 
 
-		if (memcmp(documentPath, "/notes.htm", sizeof("/notes.htm")) == 0)
+		if (memcmp(documentPath, "/notes", sizeof("/notes")) == 0)
 		{
 			switch (requestType)
 			{
 			case GET:
-				
+				if (index > 0)  //GET ONE
+				{
+
+				}
+				else   //GET ALL 
+				{
+
+				}
 				break;
 			case POST: 
 				break;
@@ -333,9 +395,9 @@ bool handleReadAPI(char* info)
 				break;
 			}
 		}
-		else if (memcmp(documentPath, "/notes.htm", BUFSIZ) == 0)
+		else if (memcmp(documentPath, "/times", BUFSIZ) == 0)
 		{
-
+			
 		}
 		else
 		{
