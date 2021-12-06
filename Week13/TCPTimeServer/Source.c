@@ -19,8 +19,8 @@ int main(void)
 
     InitializeData(listP);
     strcpy_s(&listOfNotes[0].Author, sizeof(listOfNotes->Author), "Author");
-    listOfNotes[0].theDate = 3;
-    strcpy_s(&listOfNotes[0].theNote, sizeof(listOfNotes->theNote), "This is a note about me");
+    strcpy_s(&listOfNotes[0].topic, sizeof(listOfNotes->Author), "Mysetery Novels");
+    strcpy_s(&listOfNotes[0].theNote, sizeof(listOfNotes->theNote), "This is a note about mystery");
 
     
     printf("Config the local addr...\n");

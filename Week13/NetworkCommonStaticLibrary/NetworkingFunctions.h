@@ -8,6 +8,7 @@
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 #include <time.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -18,6 +19,7 @@
 #define NOTES_TXT_FILE "Notes.txt"
 #define MAX_NOTES 30
 #define AUTHOR_LENGTH 60
+#define TOPIC_LENGTH 60
 #define NOTE_LENGTH 2000 
 
 
@@ -25,7 +27,7 @@ typedef enum proto { UDP, TCP } PROTOCOL;
 
 struct NOTE {
 	char Author[AUTHOR_LENGTH]; 
-	DATE theDate;
+	char topic[TOPIC_LENGTH];
 	char theNote[NOTE_LENGTH];
 } typedef NOTE;
 
@@ -39,6 +41,7 @@ void ShutdownWindowsSockets();
 bool getNote(int index,NOTE* theListOfNotes, NOTE* theNote); //note 
 void produceAllNoteMessage(NOTE* theListOfNotes, char* theMessage); //format
 void produceNoteMessage(NOTE* theNote, char* theMessage);  //format 
+bool produceSuccessHeader(char* buffer);
 
 
 

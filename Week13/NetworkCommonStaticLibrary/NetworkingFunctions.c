@@ -242,7 +242,7 @@ void InitializeData(NOTE* theListOfNotes)
 	for (int i = 0; i < MAX_NOTES; i++)
 	{
 		memset(&(theListOfNotes+i)->Author, NULL, sizeof(theListOfNotes->Author));
-		memset(&(theListOfNotes+i)->theDate, NULL, sizeof(theListOfNotes->theDate));
+		memset(&(theListOfNotes+i)->topic, NULL, sizeof(theListOfNotes->topic));
 		memset(&(theListOfNotes+i)->theNote, NULL, sizeof(theListOfNotes->theNote));
 	}
 }
@@ -395,6 +395,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 					}
 					else
 					{
+						produceSuccessHeader(buffer);
 						produceNoteMessage(&theNote, buffer); 
 						//free(theNote);
 						return;
@@ -475,9 +476,18 @@ bool getNote(int index, NOTE* theListOfNotes, NOTE* theNote)//note
 
 bool produceNoteMessage(NOTE* theNote, char* theMessage)  //format 
 {
-	return (sprintf(theMessage, "Author:\t%s\r\nDate:\t%i\r\nMessage:\t%s", theNote->Author, theNote->theDate, theNote->theNote) < 0);	
+	time_t currentTime;
+	currentTime = time(NULL);
+	return (sprintf(theMessage+strlen(theMessage), "Author:\t%s\r\nTopic:\t%s\r\nMessage:%5s\r\nTime:%s\r\n\0\0", theNote->Author, theNote->topic , theNote->theNote,ctime(&currentTime) ) >= 0);	
 }
-
+bool produceSuccessHeader(char* buffer)
+{
+	const char* response =
+		"HTTP/1.1 200 OK\r\n"
+		"Connection: close\r\n"
+		"Content-Type: text/plain\r\n\r\n";
+	return (sprintf(buffer+strlen(buffer), "%s\n\0\0", response)>=0);
+}
 void createPayload(char* buffer)
 {
 	const char* response =
