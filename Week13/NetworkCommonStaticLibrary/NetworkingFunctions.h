@@ -32,6 +32,7 @@ struct NOTE {
 //common
 void InitializeWindowsSockets();
 void InitializeData(NOTE *);  //passing an array of memset Notes and getting Notes
+bool isNoteAvailable(NOTE* theNote); 
 void CloseSocketConnection(SOCKET);
 void ShutdownWindowsSockets();
 

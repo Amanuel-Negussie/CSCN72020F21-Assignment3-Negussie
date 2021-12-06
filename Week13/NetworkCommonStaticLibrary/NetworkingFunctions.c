@@ -376,7 +376,9 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 
 		if (memcmp(documentPath, "/notes", sizeof("/notes")) == 0 || memcmp(documentPath, "/notes/", sizeof("/notes/"))==0)
 		{
-			NOTE* tN = NULL;
+			//NOTE* theNote = (NOTE*) malloc(sizeof(NOTE));
+			NOTE theNote;
+			
 
 			switch (requestType)
 			{
@@ -385,12 +387,16 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				{
 					//accessing the data by index value 
 					char response[BUFSIZ];
-					if (!getNote(index, listOfNotes, tN))
+					if (!getNote(index, listOfNotes, &theNote))
+					{
 						//produceErrorMessage(index, &theMessage);
+						//free(theNote);
 						return; //404 error 
+					}
 					else
 					{
-						produceNoteMessage(tN, buffer); 
+						produceNoteMessage(&theNote, buffer); 
+						//free(theNote);
 						return;
 					}
 
@@ -450,7 +456,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 
 
 
-bool isNoteNull(NOTE* theNote)
+bool isNoteAvailable(NOTE* theNote)
 {
 
 	NOTE* emptyNote = (NOTE*)malloc(sizeof(NOTE));
@@ -463,13 +469,13 @@ bool isNoteNull(NOTE* theNote)
 
 bool getNote(int index, NOTE* theListOfNotes, NOTE* theNote)//note 
 {
-	theNote = (theListOfNotes + index); 
-	return isNoteNull(theNote);
+	*theNote = *(theListOfNotes + index -1); 
+	return isNoteAvailable(theNote);  //if note is null then I cannot get Note //if note is note null then I can 
 }
 
 bool produceNoteMessage(NOTE* theNote, char* theMessage)  //format 
 {
-	return (sprintf(theMessage, "Author:\t%s\r\nDate:\t%s\r\nMessage:\t%s", theNote->Author, theNote->theDate, theNote->theNote) < 0);	
+	return (sprintf(theMessage, "Author:\t%s\r\nDate:\t%i\r\nMessage:\t%s", theNote->Author, theNote->theDate, theNote->theNote) < 0);	
 }
 
 void createPayload(char* buffer)
