@@ -241,9 +241,9 @@ void InitializeData(NOTE* theListOfNotes)
 {
 	for (int i = 0; i < MAX_NOTES; i++)
 	{
-		memset(theListOfNotes->Author, NULL, sizeof(theListOfNotes->Author));
-		memset(theListOfNotes->theDate, NULL, sizeof(theListOfNotes->theDate));
-		memset(theListOfNotes->theNote, NULL, sizeof(theListOfNotes->theNote));
+		memset(&theListOfNotes->Author, NULL, sizeof(theListOfNotes->Author));
+		memset(&theListOfNotes->theDate, NULL, sizeof(theListOfNotes->theDate));
+		memset(&theListOfNotes->theNote, NULL, sizeof(theListOfNotes->theNote));
 	}
 }
 bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE* pV, int* index, char* query)
@@ -448,11 +448,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 }
 
 
-void InitializeData(NOTE* theNote)
-{
 
-
-}
 
 bool isNoteNull(NOTE* theNote)
 {
