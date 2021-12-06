@@ -212,10 +212,13 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen, NOTE*
 
 					printf("received message (size: %d bytes) from %I64d\n", bytes_received, i);
 					char buffer[SENDBUFFERSIZE];
+					memset(&buffer, '\0', SENDBUFFERSIZE);
 
 					handleReadAPI(read,&buffer, listP);
 					//createPayload(buffer);
-					int bytes_sent = send(i, buffer, (int)strlen(buffer), 0);
+					
+					int bytes_sent = send(i, &buffer, (int)strlen(buffer), 0);
+					memset(&buffer, '\0', SENDBUFFERSIZE);
 					printf("sent message (size: %d bytes) to %I64d\n", bytes_sent, i);
 				}
 			}
@@ -460,9 +463,10 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 bool isNoteAvailable(NOTE* theNote)
 {
 
-	NOTE* emptyNote = (NOTE*)malloc(sizeof(NOTE));
-	memset(emptyNote, NULL, sizeof(NOTE));
-	if (memcmp(theNote, emptyNote, sizeof(NOTE)) == 0)
+	//NOTE* emptyNote = (NOTE*)malloc(sizeof(NOTE));
+	NOTE emptyNote;
+	memset(&emptyNote, NULL, sizeof(NOTE));
+	if (memcmp(theNote, &emptyNote, sizeof(NOTE)) == 0)
 		return false;
 	else
 		return true;
