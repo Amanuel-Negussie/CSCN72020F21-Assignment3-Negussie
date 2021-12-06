@@ -11,8 +11,13 @@
 
 int main(void)
 {
+    
     InitializeWindowsSockets();
-
+    NOTE listOfNotes[MAX_NOTES],* listP;
+    listP = &listOfNotes;
+    IntializeData(listP);
+    memset(&listOfNotes, NULL, sizeof(NOTE) * MAX_NOTES);
+    
     printf("Config the local addr...\n");
     struct addrinfo* bind_address = ConfigureLocalAddress(LISTENINGPORT, TCP);
 
@@ -24,7 +29,7 @@ int main(void)
  
     printf("Waiting for connection...\n");
     //SOCKET socket_client = WaitForAndAcceptConnection(socket_listen);
-    WaitForAndAcceptAndHandleMultiplexedConnections(socket_listen); //Added in for multiplexed connections
+    WaitForAndAcceptAndHandleMultiplexedConnections(socket_listen, listP); //Added in for multiplexed connections
   
 
     printf("Closing listening socket...\n");

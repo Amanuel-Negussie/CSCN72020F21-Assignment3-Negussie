@@ -154,7 +154,7 @@ SOCKET WaitForAndAcceptConnection(SOCKET socket_listen)
 }
 
 
-void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
+void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen, NOTE* listP)
 {
 	fd_set master;			//create new FD_SET 
 	FD_ZERO(&master);		// initialize it all to 0 
@@ -210,20 +210,11 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen)
 						continue;
 					}
 
-
-
-
-
-
 					printf("received message (size: %d bytes) from %I64d\n", bytes_received, i);
 					char buffer[SENDBUFFERSIZE];
 
-
-
-					handleReadAPI(read);
-
-			
-					createPayload(buffer);
+					handleReadAPI(read,&buffer, listP);
+					//createPayload(buffer);
 					int bytes_sent = send(i, buffer, (int)strlen(buffer), 0);
 					printf("sent message (size: %d bytes) to %I64d\n", bytes_sent, i);
 				}
@@ -245,6 +236,16 @@ enum REQUEST_TYPE {
 	DELETE_IT,
 }typedef REQUEST_TYPE;
 
+
+void InitializeData(NOTE* theListOfNotes)
+{
+	for (int i = 0; i < MAX_NOTES; i++)
+	{
+		memset(theListOfNotes->Author, NULL, sizeof(theListOfNotes->Author));
+		memset(theListOfNotes->theDate, NULL, sizeof(theListOfNotes->theDate));
+		memset(theListOfNotes->theNote, NULL, sizeof(theListOfNotes->theNote));
+	}
+}
 bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE* pV, int* index, char* query)
 {
 	char requestTypeString [BUFSIZ], * rP; 
@@ -285,12 +286,13 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 		char* endPointer = NULL;
 		int num = 0;
 		if ((*Buffer)!=NULL)
-		num = strtol(Buffer, endPointer, BASE_TEN);
+		num = strtol(Buffer, &endPointer, BASE_TEN);
 		if (*Buffer == '?') //query 
 		{
 			for (int i = 0; i < strlen(Buffer); i++)
 			{
 				*query++ = *(Buffer + i);
+				
 			}
 			*query = '\0';
 		}
@@ -337,11 +339,11 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 	
 	return true;
 }
-bool handleReadAPI(char* info)
+void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 {
 	//read read and choose which function to take 
 
-	//he request type, the document path, and the protocol version
+	//the request type, the document path, and the protocol version
 	REQUEST_TYPE requestType; 
 	char documentPath[BUFSIZ]; 
 	char* dP = documentPath;
@@ -354,7 +356,8 @@ bool handleReadAPI(char* info)
 
 	// requestLineParser: error checking here for request Type as well as protocolVersion
 	if (!requestLineParser(info, &requestType, dP, &protocolVersion, &index, q))
-		return false;
+		return false;  //communicate to client that there is an incorrect -
+
 	//parse documentPath 
 	//notes.htm then get all of the notes 
 	//notes.htm/1 then you get note 1 
@@ -362,8 +365,6 @@ bool handleReadAPI(char* info)
 	//----> how many numbers 
 	// notes.htm/
 	//folder //
-
-
 
 	if (protocolVersion == HTTP_ONE_POINT_ONE)
 	{
@@ -373,18 +374,37 @@ bool handleReadAPI(char* info)
 		//document path is the web page we're going to/ more importantly it's the type of data we want 
 		//requestType is either Get Get All Collections Set Put Delete 
 
-		if (memcmp(documentPath, "/notes", sizeof("/notes")) == 0)
+		if (memcmp(documentPath, "/notes", sizeof("/notes")) == 0 || memcmp(documentPath, "/notes/", sizeof("/notes/"))==0)
 		{
+			NOTE* tN = NULL;
+
 			switch (requestType)
 			{
 			case GET:
 				if (index > 0)  //GET ONE
 				{
+					//accessing the data by index value 
+					char response[BUFSIZ];
+					if (!getNote(index, listOfNotes, tN))
+						//produceErrorMessage(index, &theMessage);
+						return; //404 error 
+					else
+					{
+						produceNoteMessage(tN, buffer); 
+						return;
+					}
 
+
+
+					
+					
 				}
 				else   //GET ALL 
 				{
+					//code for get ALL 
+					
 
+					
 				}
 				break;
 			case POST: 
@@ -423,10 +443,38 @@ bool handleReadAPI(char* info)
 	
 
 	//if message is GET time .... 
-	char buffer[SENDBUFFERSIZE];
-	createPayload(buffer);
+	/*char buffer[SENDBUFFERSIZE];
+	createPayload(buffer);*/
 }
 
+
+void InitializeData(NOTE* theNote)
+{
+
+
+}
+
+bool isNoteNull(NOTE* theNote)
+{
+
+	NOTE* emptyNote = (NOTE*)malloc(sizeof(NOTE));
+	memset(emptyNote, NULL, sizeof(NOTE));
+	if (memcmp(theNote, emptyNote, sizeof(NOTE)) == 0)
+		return false;
+	else
+		return true;
+}
+
+bool getNote(int index, NOTE* theListOfNotes, NOTE* theNote)//note 
+{
+	theNote = (theListOfNotes + sizeof(NOTE)*index); 
+	return isNoteNull(theNote);
+}
+
+bool produceNoteMessage(NOTE* theNote, char* theMessage)  //format 
+{
+	return (sprintf(theMessage, "Author:\t%s\r\nDate:\t%s\r\nMessage:\t%s", theNote->Author, theNote->theDate, theNote->theNote) < 0);	
+}
 
 void createPayload(char* buffer)
 {
