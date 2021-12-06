@@ -15,7 +15,11 @@ int main(void)
     InitializeWindowsSockets();
     NOTE listOfNotes[MAX_NOTES],* listP;
     listP = &listOfNotes;
-    IntializeData(listP);
+    strcpy_s(&listOfNotes[0].Author, sizeof(listOfNotes->Author), "Author");
+    listOfNotes[0].theDate = 3;
+    strcpy_s(&listOfNotes[0].theNote, sizeof(listOfNotes->theNote), "This is a note about me");
+
+    InitializeData(listP);
     memset(&listOfNotes, NULL, sizeof(NOTE) * MAX_NOTES);
     
     printf("Config the local addr...\n");
