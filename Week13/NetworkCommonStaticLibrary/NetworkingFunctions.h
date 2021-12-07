@@ -41,6 +41,7 @@ bool getNote(int , NOTE* , NOTE* ); //note
 bool produceAllNoteMessage(NOTE*, char*); //format
 bool produceNoteMessage(NOTE*, char*);  //format
 bool produceSuccessHeader(char*);
+bool produce404Error(char*); //404 error
 
 //server only
 struct addrinfo* ConfigureLocalAddress(char*, PROTOCOL);

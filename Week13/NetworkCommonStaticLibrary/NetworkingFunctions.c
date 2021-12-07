@@ -199,6 +199,7 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen, NOTE*
 				else
 				{
 					char read[SENDBUFFERSIZE];
+					memset(&read, '\0', SENDBUFFERSIZE);
 					int bytes_received = recv(i, read, SENDBUFFERSIZE, 0);
 					if (bytes_received < 1)  //in the event the client disappears during this time
 					{
@@ -332,6 +333,18 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 
 	return true;
 }
+
+
+
+bool produce404Error(char* buffer)
+{
+	const char* response =
+		"HTTP/1.1 404 Page Not Found\r\n"
+		"Connection: close\r\n\r\n";
+	return (sprintf(buffer + strlen(buffer), "%s\n\0\0", response) >= 0);
+
+}
+
 void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 {
 	//read read and choose which function to take
@@ -379,8 +392,8 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 					
 					if (!getNote(index, listOfNotes, &theNote))
 					{
-						//AErrorMessage(index, &theMessage);
-						//produce404Error(buffer); 
+						//AError
+						produce404Error(buffer); 
 						//free(theNote);
 						return; //404 error
 					}
@@ -467,7 +480,10 @@ bool isNoteAvailable(NOTE* theNote)
 
 bool getNote(int index, NOTE* theListOfNotes, NOTE* theNote)//note
 {
+	if (index > MAX_NOTES)
+		return false;
 	*theNote = *(theListOfNotes + index - 1);
+
 	return isNoteAvailable(theNote);  //if note is null then I cannot get Note //if note is note null then I can
 }
 
