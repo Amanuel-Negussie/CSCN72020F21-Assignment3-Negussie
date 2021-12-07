@@ -11,35 +11,40 @@
 
 int main(void)
 {
-    
-    InitializeWindowsSockets();
-    NOTE listOfNotes[MAX_NOTES],* listP;
-    listP = &listOfNotes;
-    memset(&listOfNotes, NULL, sizeof(NOTE) * MAX_NOTES);
+	InitializeWindowsSockets();
+	NOTE listOfNotes[MAX_NOTES], * listP;
+	listP = &listOfNotes;
+	memset(&listOfNotes, '\0', sizeof(NOTE) * MAX_NOTES);
 
-    InitializeData(listP);
-    strcpy_s(&listOfNotes[0].Author, sizeof(listOfNotes->Author), "Author");
-    strcpy_s(&listOfNotes[0].topic, sizeof(listOfNotes->Author), "Mysetery Novels");
-    strcpy_s(&listOfNotes[0].theNote, sizeof(listOfNotes->theNote), "This is a note about mystery");
+	InitializeData(listP);
+	strcpy_s(&listOfNotes[0].Author, sizeof(listOfNotes->Author), "Author");
+	strcpy_s(&listOfNotes[0].topic, sizeof(listOfNotes->Author), "Mysetery Novels");
+	strcpy_s(&listOfNotes[0].theNote, sizeof(listOfNotes->theNote), "This is a note about mystery");
 
-    
-    printf("Config the local addr...\n");
-    struct addrinfo* bind_address = ConfigureLocalAddress(LISTENINGPORT, TCP);
+	strcpy_s(&listOfNotes[2].Author, sizeof(listOfNotes->Author), "J.K. Rowling");
+	strcpy_s(&listOfNotes[2].topic, sizeof(listOfNotes->Author), "Fantasy");
+	strcpy_s(&listOfNotes[2].theNote, sizeof(listOfNotes->theNote), "This is Harry Potter and wow!");
 
-    printf("Creating socket...\n");
-    SOCKET socket_listen = CreateBindListeningSocket(bind_address);
+	strcpy_s(&listOfNotes[5].Author, sizeof(listOfNotes->Author), "APPLE & PAIR");
+	strcpy_s(&listOfNotes[5].topic, sizeof(listOfNotes->Author), "FRUITS");
+	strcpy_s(&listOfNotes[5].theNote, sizeof(listOfNotes->theNote), "THE TYPES OF FRUITS ARE APPLE & PEAR");
 
-    printf("Start listening...\n");
-    StartListeningForConnections(socket_listen);
- 
-    printf("Waiting for connection...\n");
-    //SOCKET socket_client = WaitForAndAcceptConnection(socket_listen);
-    WaitForAndAcceptAndHandleMultiplexedConnections(socket_listen, listP); //Added in for multiplexed connections
-  
+	printf("Config the local addr...\n");
+	struct addrinfo* bind_address = ConfigureLocalAddress(LISTENINGPORT, TCP);
 
-    printf("Closing listening socket...\n");
-    CloseSocketConnection(socket_listen);
+	printf("Creating socket...\n");
+	SOCKET socket_listen = CreateBindListeningSocket(bind_address);
 
-    ShutdownWindowsSockets();
-    return 0;
+	printf("Start listening...\n");
+	StartListeningForConnections(socket_listen);
+
+	printf("Waiting for connection...\n");
+	//SOCKET socket_client = WaitForAndAcceptConnection(socket_listen);
+	WaitForAndAcceptAndHandleMultiplexedConnections(socket_listen, listP); //Added in for multiplexed connections
+
+	printf("Closing listening socket...\n");
+	CloseSocketConnection(socket_listen);
+
+	ShutdownWindowsSockets();
+	return 0;
 }

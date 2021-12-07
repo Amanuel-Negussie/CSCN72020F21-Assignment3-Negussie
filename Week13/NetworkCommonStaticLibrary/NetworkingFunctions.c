@@ -17,7 +17,7 @@
 //4. Server project properties
 //-- > C / C++
 //------->General
-//----------->Additional Include Directories, add 
+//----------->Additional Include Directories, add
 //							$(SolutionDir)NetworkCommonStaticLibrary
 //								* no \ after macro!
 
@@ -60,20 +60,19 @@ struct addrinfo* configureAddress(char* host, char* port, PROTOCOL protocol)
 	hints.ai_flags = AI_PASSIVE;                    //bind to * address
 
 	struct addrinfo* bind_address;  //no malloc required here.  see note below
-	if(!strncmp(host, "*", 1))	// 0 if same!
+	if (!strncmp(host, "*", 1))	// 0 if same!
 		getaddrinfo(0, port, &hints, &bind_address);
 	else
 		getaddrinfo(host, port, &hints, &bind_address);
 	//
 	// from: https://docs.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfo
-	// All information returned by the getaddrinfo function pointed to by the ppResult 
-	// parameter is dynamically allocated, including all addrinfo structures, socket address 
+	// All information returned by the getaddrinfo function pointed to by the ppResult
+	// parameter is dynamically allocated, including all addrinfo structures, socket address
 	// structures, and canonical host name strings pointed to by addrinfo structures. Memory
 	// allocated by a successful call to this function must be released with a subsequent call
 	// to freeaddrinfo.
 	return bind_address;
 }
-
 
 struct addrinfo* ConfigureLocalAddress(char* port, PROTOCOL protocol)
 {
@@ -87,12 +86,12 @@ struct addrinfo* ConfigureRemoteAddress(char* remoteHost, char* remotePort, PROT
 
 SOCKET CreateBindListeningSocket(struct addrinfo* bind_address)
 {
-	SOCKET socket_listen = socket(bind_address->ai_family, bind_address->ai_socktype, 
-																									bind_address->ai_protocol);
+	SOCKET socket_listen = socket(bind_address->ai_family, bind_address->ai_socktype,
+		bind_address->ai_protocol);
 	if ((socket_listen) == INVALID_SOCKET)
 	{
 		fprintf(stderr, "socket() failed, exiting with error (%d)\n", WSAGetLastError());
-		exit(EXIT_FAILURE);  
+		exit(EXIT_FAILURE);
 	}
 
 	if (bind(socket_listen, bind_address->ai_addr, bind_address->ai_addrlen))
@@ -132,7 +131,6 @@ void StartListeningForConnections(SOCKET socket_listen)
 	}
 }
 
-
 SOCKET WaitForAndAcceptConnection(SOCKET socket_listen)
 {
 	struct sockaddr_storage client_address;
@@ -143,23 +141,22 @@ SOCKET WaitForAndAcceptConnection(SOCKET socket_listen)
 		fprintf(stderr, "accept() failed. (%d)\n", WSAGetLastError());
 		return 1;
 	}
-	
+
 	//opportunity to clean this up!
 	char address_buffer[DISPLAYBUFFERSIZE];
-	getnameinfo((struct sockaddr*)&client_address, client_len, address_buffer, 
-																							sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
+	getnameinfo((struct sockaddr*)&client_address, client_len, address_buffer,
+		sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
 	printf("%s\n", address_buffer);
 
 	return socket_client;
 }
 
-
 void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen, NOTE* listP)
 {
-	fd_set master;			//create new FD_SET 
-	FD_ZERO(&master);		// initialize it all to 0 
+	fd_set master;			//create new FD_SET
+	FD_ZERO(&master);		// initialize it all to 0
 	FD_SET(socket_listen, &master); //add our (existing) listener socket to FD_SET
-	SOCKET max_socket = socket_listen;	//and this will be largest socket value 
+	SOCKET max_socket = socket_listen;	//and this will be largest socket value
 	SOCKET min_socket = max_socket; //this is our min_socket
 
 	while (1)
@@ -193,7 +190,7 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen, NOTE*
 					if (socket_client < min_socket)  //update minimum range in set
 						min_socket = socket_client;
 
-					//Displaying new connection 
+					//Displaying new connection
 					char address_buffer[DISPLAYBUFFERSIZE];
 					getnameinfo((struct sockaddr*)&client_address, client_len, address_buffer,
 						sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
@@ -214,16 +211,15 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen, NOTE*
 					char buffer[SENDBUFFERSIZE];
 					memset(&buffer, '\0', SENDBUFFERSIZE);
 
-					handleReadAPI(read,&buffer, listP);
+					handleReadAPI(read, &buffer, listP);
 					//createPayload(buffer);
-					
+
 					int bytes_sent = send(i, &buffer, (int)strlen(buffer), 0);
 					memset(&buffer, '\0', SENDBUFFERSIZE);
 					printf("sent message (size: %d bytes) to %I64d\n", bytes_sent, i);
 				}
 			}
 		}
-
 	}
 }
 
@@ -233,122 +229,116 @@ enum PROTOCOL_TYPE {
 }typedef PROTOCOL_TYPE;
 
 enum REQUEST_TYPE {
-	GET, 
+	GET,
 	POST,
-	PUT, 
+	PUT,
 	DELETE_IT,
 }typedef REQUEST_TYPE;
-
 
 void InitializeData(NOTE* theListOfNotes)
 {
 	for (int i = 0; i < MAX_NOTES; i++)
 	{
-		memset(&(theListOfNotes+i)->Author, NULL, sizeof(theListOfNotes->Author));
-		memset(&(theListOfNotes+i)->topic, NULL, sizeof(theListOfNotes->topic));
-		memset(&(theListOfNotes+i)->theNote, NULL, sizeof(theListOfNotes->theNote));
+		memset(&(theListOfNotes + i)->Author, NULL, sizeof(theListOfNotes->Author));
+		memset(&(theListOfNotes + i)->topic, NULL, sizeof(theListOfNotes->topic));
+		memset(&(theListOfNotes + i)->theNote, NULL, sizeof(theListOfNotes->theNote));
 	}
 }
 bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE* pV, int* index, char* query)
 {
-	char requestTypeString [BUFSIZ], * rP; 
+	char requestTypeString[BUFSIZ], * rP;
 	rP = requestTypeString;
-	char protocolTypeString[BUFSIZ], * pP; 
+	char protocolTypeString[BUFSIZ], * pP;
 	pP = protocolTypeString;
 	char dpBuffer[BUFSIZ], * Buffer;
 	memset(dpBuffer, '\0', BUFSIZ * sizeof(char));
 	Buffer = dpBuffer;
 
-
-		while (*response != ' ')
-			*rP++ = *response++;
-		*rP = '\0';
-		response++;
-		while (*response != ' ')
+	while (*response != ' ')
+		*rP++ = *response++;
+	*rP = '\0';
+	response++;
+	while (*response != ' ')
+	{
+		*Buffer = *response;
+		if (*Buffer == '/')
 		{
-			*Buffer= *response; 
-			if (*Buffer == '/')
+			for (int i = 0; i < strlen(dpBuffer); i++)
 			{
-				for (int i = 0; i < strlen(dpBuffer); i++)
-				{
-					*dP = dpBuffer[i];  //go through Buffer and iterate through pointer
-					dP++;
-				}
-		
-				memset(dpBuffer, '\0', BUFSIZ * sizeof(char));
-				Buffer = &dpBuffer;
-			}
-			else
-			{
-				Buffer++;  //increase buffer 	
-			}
-			response++;
-		}
-		//check if buffer if buffer is a query or if its an index ? If not then add buffer to document path
-		Buffer = &dpBuffer;
-		char* endPointer = NULL;
-		int num = 0;
-		if ((*Buffer)!=NULL)
-		num = strtol(Buffer, &endPointer, BASE_TEN);
-		if (*Buffer == '?') //query 
-		{
-			for (int i = 0; i < strlen(Buffer); i++)
-			{
-				*query++ = *(Buffer + i);
+				*dP++ = dpBuffer[i];  //go through Buffer and iterate through pointer
 				
 			}
-			*query = '\0';
-		}
-		else if (num!= 0 && endPointer==Buffer+strlen(Buffer)) //index
-		{
-			*index = num; 
+			//Buffer = &dpBuffer ;
+			memset(dpBuffer, '\0', BUFSIZ * sizeof(char));
+			Buffer = &dpBuffer;
 		}
 		else
 		{
-			for (int i = 0; i < strlen(Buffer); i++)
-			{
-				*dP++ = *(Buffer + i);
-			}
+			Buffer++;  //increase buffer
 		}
-
-		//end dP correctly
-		*dP = '\0';
 		response++;
-		while (*response != '\n')
-			*pP++ = *response++; 
-		*pP = '\0';
-		
-		//parsing through REQUEST TYPES
-		if (memcmp(requestTypeString, "GET", sizeof("GET")) == 0)
-			*rT = GET;
-		else if (memcmp(requestTypeString, "POST", sizeof("POST")) == 0)
-			*rT = POST;
-		else if (memcmp(requestTypeString, "PUT", sizeof("PUT")) == 0)
-			*rT = PUT;
-		else if (memcmp(requestTypeString, "DELETE", sizeof("DELETE")) == 0)
-			*rT = DELETE_IT;
-		else
-			return false;
-		pP = protocolTypeString;
-		if (memcmp(pP, "HTTP/1.1", sizeof(pP)) == 0)
-			*pV = HTTP_ONE_POINT_ONE;
-		else if (memcmp(pP, "HTTP/2", sizeof(pP)) == 0)
-			*pV = HTTP_TWO;
-		else
-			return false;
+	}
+	//check if buffer if buffer is a query or if its an index ? If not then add buffer to document path
+	Buffer = &dpBuffer;
+	char* endPointer = NULL;
+	int num = 0;
+	if ((*Buffer) != NULL)
+		num = strtol(Buffer, &endPointer, BASE_TEN);
+	if (*Buffer == '?') //query
+	{
+		for (int i = 0; i < strlen(Buffer); i++)
+		{
+			*query++ = *(Buffer + i);
+		}
+		*query = '\0';
+	}
+	else if (num != 0 && endPointer == Buffer + strlen(Buffer)) //index
+	{
+		*index = num;
+	}
+	else
+	{
+		for (int i = 0; i < strlen(Buffer); i++)
+		{
+			*dP++ = *(Buffer + i);
+		}
+	}
 
+	//end dP correctly
+	*dP = '\0';
+	response++;
+	while (*response != '\n')
+		*pP++ = *response++;
+	*pP = '\0';
 
-	
-	
+	//parsing through REQUEST TYPES
+	if (memcmp(requestTypeString, "GET", sizeof("GET")) == 0)
+		*rT = GET;
+	else if (memcmp(requestTypeString, "POST", sizeof("POST")) == 0)
+		*rT = POST;
+	else if (memcmp(requestTypeString, "PUT", sizeof("PUT")) == 0)
+		*rT = PUT;
+	else if (memcmp(requestTypeString, "DELETE", sizeof("DELETE")) == 0)
+		*rT = DELETE_IT;
+	else
+		return false;
+	pP = protocolTypeString;
+	if (memcmp(pP, "HTTP/1.1", sizeof(pP)) == 0)
+		*pV = HTTP_ONE_POINT_ONE;
+	else if (memcmp(pP, "HTTP/2", sizeof(pP)) == 0)
+		*pV = HTTP_TWO;
+	else
+		return false;
+
 	return true;
 }
 void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 {
-	//read read and choose which function to take 
+	//read read and choose which function to take
 
 	//the request type, the document path, and the protocol version
-	REQUEST_TYPE requestType; 
-	char documentPath[BUFSIZ]; 
+	REQUEST_TYPE requestType;
+	char documentPath[BUFSIZ];
 	char* dP = documentPath;
 	memset(documentPath, '\0', BUFSIZ * (sizeof(char)));
 	PROTOCOL_TYPE protocolVersion;
@@ -356,88 +346,104 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 	char query[BUFSIZ], q; //extra bonus: query
 	q = query;
 
-
 	// requestLineParser: error checking here for request Type as well as protocolVersion
 	if (!requestLineParser(info, &requestType, dP, &protocolVersion, &index, q))
 		return false;  //communicate to client that there is an incorrect -
 
-	//parse documentPath 
-	//notes.htm then get all of the notes 
-	//notes.htm/1 then you get note 1 
-	//notes.htm/2 then you get note 2 
-	//----> how many numbers 
+	//parse documentPath
+	//notes.htm then get all of the notes
+	//notes.htm/1 then you get note 1
+	//notes.htm/2 then you get note 2
+	//----> how many numbers
 	// notes.htm/
 	//folder //
 
 	if (protocolVersion == HTTP_ONE_POINT_ONE)
 	{
+		//PROTOCOL VERSION HTTP 1.1
 
-		//PROTOCOL VERSION HTTP 1.1 
+		//document path is the web page we're going to/ more importantly it's the type of data we want
+		//requestType is either Get Get All Collections Set Put Delete
 
-		//document path is the web page we're going to/ more importantly it's the type of data we want 
-		//requestType is either Get Get All Collections Set Put Delete 
-
-		if (memcmp(documentPath, "/notes", sizeof("/notes")) == 0 || memcmp(documentPath, "/notes/", sizeof("/notes/"))==0)
+		if (memcmp(documentPath, "/note", sizeof("/note")) == 0 || memcmp(documentPath, "/note/", sizeof("/note/")) == 0)
 		{
 			//NOTE* theNote = (NOTE*) malloc(sizeof(NOTE));
 			NOTE theNote;
-			
 
 			switch (requestType)
 			{
 			case GET:
 				if (index > 0)  //GET ONE
 				{
-					//accessing the data by index value 
-					char response[BUFSIZ];
+					//accessing the data by index value
+					
 					if (!getNote(index, listOfNotes, &theNote))
 					{
-						//produceErrorMessage(index, &theMessage);
+						//AErrorMessage(index, &theMessage);
+						//produce404Error(buffer); 
 						//free(theNote);
-						return; //404 error 
+						return; //404 error
 					}
 					else
 					{
 						produceSuccessHeader(buffer);
-						produceNoteMessage(&theNote, buffer); 
+						produceNoteMessage(&theNote, buffer);
 						//free(theNote);
 						return;
 					}
-
-
-
-					
-					
 				}
-				else   //GET ALL 
+				else   //GET ALL
 				{
-					//code for get ALL 
-					
+					//code for get ALL
+					//produce404Error(buffer) 
+					//return;
 
-					
 				}
 				break;
-			case POST: 
+			case POST:
 				break;
-			case PUT: 
-				break; 
+			case PUT:
+				break;
 			case DELETE_IT:
 				break;
 			}
 		}
-		else if (memcmp(documentPath, "/times", BUFSIZ) == 0)
+		else if (memcmp(documentPath, "/notes", strlen(documentPath)) == 0 || memcmp(documentPath, "/notes/", strlen(documentPath)) == 0)
 		{
-			
+			NOTE theNote;
+			switch (requestType)
+			{
+			case GET:
+				if (index > 0)  //GET ONE
+				{
+					//accessing the data by index value
+					//produce404Error(buffer) 
+					//return;
+					
+				}
+				else   //GET ALL
+				{
+					produceSuccessHeader(buffer);
+					produceAllNoteMessage(listOfNotes, buffer);
+					
+					//code for get ALL
+					
+
+				}
+				break;
+			case POST:
+				break;
+			case PUT:
+				break;
+			case DELETE_IT:
+				break;
+			}
+
 		}
 		else
 		{
-			//if message is GET time .... 
-			char buffer[SENDBUFFERSIZE];
-			createPayload(buffer);
+			
 		}
-
-
-
 	}
 	else if (protocolVersion == HTTP_TWO)
 	{
@@ -446,23 +452,10 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 	}
 	else
 		return false;
-
-	
-
-
-	
-
-	//if message is GET time .... 
-	/*char buffer[SENDBUFFERSIZE];
-	createPayload(buffer);*/
 }
-
-
-
 
 bool isNoteAvailable(NOTE* theNote)
 {
-
 	//NOTE* emptyNote = (NOTE*)malloc(sizeof(NOTE));
 	NOTE emptyNote;
 	memset(&emptyNote, NULL, sizeof(NOTE));
@@ -472,25 +465,44 @@ bool isNoteAvailable(NOTE* theNote)
 		return true;
 }
 
-bool getNote(int index, NOTE* theListOfNotes, NOTE* theNote)//note 
+bool getNote(int index, NOTE* theListOfNotes, NOTE* theNote)//note
 {
-	*theNote = *(theListOfNotes + index -1); 
-	return isNoteAvailable(theNote);  //if note is null then I cannot get Note //if note is note null then I can 
+	*theNote = *(theListOfNotes + index - 1);
+	return isNoteAvailable(theNote);  //if note is null then I cannot get Note //if note is note null then I can
 }
 
-bool produceNoteMessage(NOTE* theNote, char* theMessage)  //format 
+bool produceNoteMessage(NOTE* theNote, char* theMessage)  //format
 {
 	time_t currentTime;
 	currentTime = time(NULL);
-	return (sprintf(theMessage+strlen(theMessage), "Author:\t%s\r\nTopic:\t%s\r\nMessage:%5s\r\nTime:%s\r\n\0\0", theNote->Author, theNote->topic , theNote->theNote,ctime(&currentTime) ) >= 0);	
+	return (sprintf(theMessage + strlen(theMessage), "Author:\t%s\r\nTopic:\t%s\r\nMessage:%5s\r\nTime:%8s\r\n\0\0", theNote->Author, theNote->topic, theNote->theNote, ctime(&currentTime)) >= 0);
 }
+
+bool produceAllNoteMessage(NOTE* theListOfNotes, char* theMessage) //format
+{
+	time_t currentTime; 
+	
+	for (int i = 0; i < MAX_NOTES; i++)
+	{
+		if (isNoteAvailable(theListOfNotes + i))
+			if (sprintf(theMessage + strlen(theMessage), "Note #%i\nAuthor:\t%s\r\nTopic:\t%s\r\nMessage:%15s\n\n", i+1, (theListOfNotes + i)->Author, (theListOfNotes + i)->topic, (theListOfNotes + i)->theNote) < 0)
+			{
+				fprintf(stderr, "Unable to add to the buffer.");
+				exit(1);
+			}
+	}
+			
+	currentTime = time(NULL);
+	return (sprintf(theMessage + strlen(theMessage), "Time:%9s\r\n\r\n\0\0", ctime(&currentTime))>=0);
+}
+
 bool produceSuccessHeader(char* buffer)
 {
 	const char* response =
 		"HTTP/1.1 200 OK\r\n"
 		"Connection: close\r\n"
 		"Content-Type: text/plain\r\n\r\n";
-	return (sprintf(buffer+strlen(buffer), "%s\n\0\0", response)>=0);
+	return (sprintf(buffer + strlen(buffer), "%s\n\0\0", response) >= 0);
 }
 void createPayload(char* buffer)
 {
@@ -531,23 +543,23 @@ void RecvUDPRequestAndSendResponse(SOCKET listen_socket)
 
 	int clientLength = sizeof(cliaddr);  //len is value/resuslt
 
-	int bytesReceived = recvfrom(listen_socket, 
-														buffer, 
-														SENDBUFFERSIZE,
-														0, 
-														(struct sockaddr*)&cliaddr,
-														&clientLength);
+	int bytesReceived = recvfrom(listen_socket,
+		buffer,
+		SENDBUFFERSIZE,
+		0,
+		(struct sockaddr*)&cliaddr,
+		&clientLength);
 	buffer[bytesReceived] = '\0';	// no guarantee the payload will be NULL terminated
 	printf("\nClient sent : %s\n", buffer);
 
 	createPayload(buffer);
 
-	sendto(listen_socket, 
-					buffer, 
-					strlen(buffer),
-					0, 
-					(const struct sockaddr*)&cliaddr,
-					clientLength);
+	sendto(listen_socket,
+		buffer,
+		strlen(buffer),
+		0,
+		(const struct sockaddr*)&cliaddr,
+		clientLength);
 	printf("Response message sent.\n");
 }
 
