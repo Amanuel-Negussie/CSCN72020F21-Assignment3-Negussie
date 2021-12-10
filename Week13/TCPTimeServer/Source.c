@@ -13,10 +13,11 @@ int main(void)
 {
 	InitializeWindowsSockets();
 	NOTE listOfNotes[MAX_NOTES], * listP;
-	listP = &listOfNotes;
-	memset(&listOfNotes, '\0', sizeof(NOTE) * MAX_NOTES);
+	listP = listOfNotes;
+	for (int i =0; i<MAX_NOTES; i++)
+	InitializeNote(listP++);
 
-	InitializeData(listP);
+	listP = &listOfNotes;
 	strcpy_s(&listOfNotes[0].Author, sizeof(listOfNotes->Author), "Author");
 	strcpy_s(&listOfNotes[0].topic, sizeof(listOfNotes->Author), "Mysetery Novels");
 	strcpy_s(&listOfNotes[0].theNote, sizeof(listOfNotes->theNote), "This is a note about mystery");

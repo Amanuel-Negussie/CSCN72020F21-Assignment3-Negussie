@@ -21,6 +21,7 @@
 #define AUTHOR_LENGTH 60
 #define TOPIC_LENGTH 60
 #define NOTE_LENGTH 2000
+#define CPU_DESIRED_TIME 1.00
 
 typedef enum proto { UDP, TCP } PROTOCOL;
 
@@ -32,16 +33,23 @@ struct NOTE {
 
 //common
 void InitializeWindowsSockets();
-void InitializeData(NOTE*);  //passing an array of memset Notes and getting Notes
+void InitializeNotea(NOTE*);  //passing an array of memset Notes and getting Notes
+bool createNote(NOTE*); //make sure that you can create NOTE
 bool isNoteAvailable(NOTE* theNote);
+void copyNotetoNote(NOTE* a, NOTE* b);  //copy Note to Note
 void CloseSocketConnection(SOCKET);
 void ShutdownWindowsSockets();
 
 bool getNote(int , NOTE* , NOTE* ); //note
 bool produceAllNoteMessage(NOTE*, char*); //format
 bool produceNoteMessage(NOTE*, char*);  //format
-bool produceSuccessHeader(char*);
+bool convertJSONtoNote(NOTE* newNote, char* response); //convert JSON to Note
+bool isUnderTime(double changeInTime, time_t start); //isUnderTime
+bool produce200OKHeader(char*);
+bool produce204NoContent(char*);
 bool produce404Error(char*); //404 error
+bool produce405Error(char*); //405 ERROR -->Method Not Allowed
+bool produce400Error(char*); //400 Bad Request
 
 //server only
 struct addrinfo* ConfigureLocalAddress(char*, PROTOCOL);
@@ -53,7 +61,7 @@ void createPayload(char*);
 void RecvRequestAndSendResponse(SOCKET);
 void RecvUDPRequestAndSendResponse(SOCKET);
 void handleReadAPI(char*, char*, NOTE*);
-bool requestLineParser(char*, enum REQUEST_TYPE*, char*, enum PROTOCOL_TYPE*, int*, char*);
+bool requestLineParser(char*, enum REQUEST_TYPE*, char*, enum PROTOCOL_TYPE*, int*, char*, NOTE*);
 
 //client only
 struct addrinfo* ConfigureRemoteAddress(char*, char*, PROTOCOL);
