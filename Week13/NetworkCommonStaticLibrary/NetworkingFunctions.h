@@ -17,11 +17,14 @@
 #define MAXLISTENERS		10
 #define BASE_TEN 10
 #define NOTES_TXT_FILE "Notes.txt"
+#define NOTES_DAT_FILE "Notes.dat"
+#define LOCAL_HOST_NAME "http://www.notes.com/api"
 #define MAX_NOTES 30
 #define AUTHOR_LENGTH 60
 #define TOPIC_LENGTH 60
 #define NOTE_LENGTH 2000
-#define CPU_DESIRED_TIME 1.00
+#define CPU_DESIRED_TIME 5.00
+
 
 typedef enum proto { UDP, TCP } PROTOCOL;
 
@@ -31,9 +34,17 @@ struct NOTE {
 	char theNote[NOTE_LENGTH];
 } typedef NOTE;
 
+//file saving i/o 
+bool saveNoteListToFileDAT(NOTE*, char *);
+bool readNoteListFromFileDAT(NOTE*, char*); 
+
+
+
+
+
 //common
 void InitializeWindowsSockets();
-void InitializeNotea(NOTE*);  //passing an array of memset Notes and getting Notes
+void InitializeNote(NOTE*);  //passing an array of memset Notes and getting Notes
 bool createNote(NOTE*); //make sure that you can create NOTE
 bool isNoteAvailable(NOTE* theNote);
 void copyNotetoNote(NOTE* a, NOTE* b);  //copy Note to Note

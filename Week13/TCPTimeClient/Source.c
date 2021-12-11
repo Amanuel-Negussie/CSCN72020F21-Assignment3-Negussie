@@ -2,10 +2,11 @@
 // steveh - nov 2021
 
 #include "NetworkingFunctions.h"
+#include "ClientFunctions.h"
 #include <stdio.h>
 
 
-#define MAXBUFFER	200
+#define MAXBUFFER	2000
 
 int main(void)
 {
@@ -18,23 +19,101 @@ int main(void)
 	printf("Creating socket and connect...\n");
 	SOCKET peer_socket = CreateAndConnectRemoteSocket(peer_address);
 
-	//send initial 'greeting'
-	char* message = "get current time\n\0";
-	int sent = send(peer_socket, message, strlen(message), 0);
-	if (sent == 0)
+	//provide menu 
+	/*
+	1. View A Note 
+	2. View All Notes 
+	3. Update An Existing Note 
+	4. Post A New Note 
+	5. Delete An Existing Note 
+	q: q is for quit
+	*/
+
+	/*
+	Ask User what they want to choose. 
+	Receive input. 
+	If 1) 
+	ask them what note number 
+	send request
+	If 2) 
+	send request
+	If 3)
+	ask them what note number
+	ask them Author, Topic, and Note
+	If 4) 
+	ask them what note number, 
+	ask them what Author, Topic and Note
+	send request 
+	If 5) 
+	ask them what note number
+	send request
+	*/
+
+	int response;
+
+	int index;
+	char message[MAXBUFFER] = { '\0' };
+	while (1)
 	{
-		fprintf(stderr, "send failed\n");
-		exit(1);
+
+		while (!ShowMenuAndReceiveResponse(&response));
+		NOTE newNote;
+		InitializeNote(&newNote);
+		int index;
+		switch (response)
+		{
+		case 1:  //View Note
+			while (!AskForNoteIndex(&index));
+
+			createGETSingleRequestMessage(&message, index);
+			break;
+		case 2:  //View All Notes
+			createGETCollectionRequestMessage(&message);
+			break;
+		case 3: //Update An Existing Note
+			while (!AskForNoteIndex(&index));
+			if (!ReceiveNoteResponse(&newNote))  //take a valid Note if false means client wants to go back to Menu
+				continue;
+			createPUTRequestMessage(&message, &newNote, index);
+			break;
+		case 4:  //Post a New Note
+			while (!AskForNoteIndex(&index));
+
+			if (!ReceiveNoteResponse(&newNote))
+				continue;
+			createPOSTRequestMessage(&message, &newNote, index);
+			break;
+		case 5: //Delete an Existing Note
+			while (!AskForNoteIndex(&index));
+			createDELETERequestMessage(&message, index);
+			break;
+		case 6:
+			printf("Thank you for using NOTELY API.COM");
+			exit(0);
+			break;
+		}
+
+
+
+
+		//send seply to server
+		if (send(peer_socket, message, (int)strlen(message), 0) == 0)
+		{
+			fprintf(stderr, "send failed\n");
+		}
+
+		//receive reply from server
+		char buffer[MAXBUFFER] = { '\0' };
+
+
+		if (recv(peer_socket, buffer, MAXBUFFER, 0) == 0)
+		{
+			fprintf(stderr, "unable to receive from server");
+		}
+
+		printf("%s", buffer);
+		memset(&message, '\0', MAXBUFFER);
 	}
-
-	//receive reply from server
-	char buffer[MAXBUFFER];
-	memset(buffer, '\0', MAXBUFFER);
-
-	while (recv(peer_socket, buffer, MAXBUFFER, 0) != 0)
-		;
-
-	printf("%s", buffer);
 
 	printf("Closing the connection...\n");
 	CloseSocketConnection(peer_socket);

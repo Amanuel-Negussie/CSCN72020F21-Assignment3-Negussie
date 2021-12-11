@@ -18,17 +18,8 @@ int main(void)
 	InitializeNote(listP++);
 
 	listP = &listOfNotes;
-	strcpy_s(&listOfNotes[0].Author, sizeof(listOfNotes->Author), "Author");
-	strcpy_s(&listOfNotes[0].topic, sizeof(listOfNotes->Author), "Mysetery Novels");
-	strcpy_s(&listOfNotes[0].theNote, sizeof(listOfNotes->theNote), "This is a note about mystery");
-
-	strcpy_s(&listOfNotes[2].Author, sizeof(listOfNotes->Author), "J.K. Rowling");
-	strcpy_s(&listOfNotes[2].topic, sizeof(listOfNotes->Author), "Fantasy");
-	strcpy_s(&listOfNotes[2].theNote, sizeof(listOfNotes->theNote), "This is Harry Potter and wow!");
-
-	strcpy_s(&listOfNotes[5].Author, sizeof(listOfNotes->Author), "APPLE & PAIR");
-	strcpy_s(&listOfNotes[5].topic, sizeof(listOfNotes->Author), "FRUITS");
-	strcpy_s(&listOfNotes[5].theNote, sizeof(listOfNotes->theNote), "THE TYPES OF FRUITS ARE APPLE & PEAR");
+	readNoteListFromFileDAT(listP, NOTES_DAT_FILE);
+	
 
 	printf("Config the local addr...\n");
 	struct addrinfo* bind_address = ConfigureLocalAddress(LISTENINGPORT, TCP);

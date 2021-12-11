@@ -213,6 +213,8 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen, NOTE*
 					memset(&buffer, '\0', SENDBUFFERSIZE);
 
 					handleReadAPI(&read, &buffer, listP);
+					
+				
 					//createPayload(buffer);
 
 					int bytes_sent = send(i, &buffer, (int)strlen(buffer), 0);
@@ -244,6 +246,46 @@ void InitializeNote(NOTE* theListOfNotes)
 		memset(theListOfNotes->theNote, NULL, sizeof(theListOfNotes->theNote));
 	
 }
+
+
+//bool readFromFileDAT(NOTE* listP, char);
+
+bool saveNoteListToFileDAT(NOTE* listP, char* FileName )
+{
+	FILE* write_ptr;
+
+	write_ptr = fopen(FileName, "wb"); 
+
+	if (fwrite(listP, sizeof(struct NOTE), MAX_NOTES, write_ptr) != 0)
+	{
+		fclose(write_ptr);
+		return true;
+	}
+	else {
+		fclose(write_ptr); 
+		return false;
+	}
+}
+
+
+bool readNoteListFromFileDAT(NOTE* listP, char* FileName)
+{
+	FILE* read_ptr;
+	read_ptr = fopen(FileName, "rb"); 
+	if (fread(listP, sizeof(struct NOTE), MAX_NOTES, read_ptr) != 0)
+	{
+		fclose(read_ptr);
+		return true;
+	}
+	else
+	{
+		fclose(read_ptr);
+		return false;
+	}
+}
+
+
+
 bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE* pV, int* index, char* query, NOTE* newNote)
 {
 	char requestTypeString[BUFSIZ], * rP;
@@ -325,7 +367,7 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 	pP = protocolTypeString;
 	if (memcmp(pP, "HTTP/1.1", sizeof(pP)) == 0)
 		*pV = HTTP_ONE_POINT_ONE;
-	else if (memcmp(pP, "HTTP/2", sizeof(pP)) == 0)
+	else if (memcmp(pP, "HTTP/2\0", sizeof(pP)) == 0)
 		*pV = HTTP_TWO;
 	else
 		return false;
@@ -378,15 +420,14 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 
 bool convertJSONtoNote(NOTE* newNote, char* response)
 {
-	clock_t start, end;
-	double cpu_time_used;  //clock time adapted from https://www.geeksforgeeks.org/how-to-measure-time-taken-by-a-program-in-c/ //
+	clock_t start; //clock time adapted from https://www.geeksforgeeks.org/how-to-measure-time-taken-by-a-program-in-c/ //
 	start = clock();
 	int count = 0;
 	while (*response != ':' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 	}
 	response++;
@@ -394,17 +435,16 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+	/*	if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 	}
 	response++;
 	start = clock();
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
-		response++;
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+	/*	if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		strncat(newNote->Author, response++, 1);
 		count++;
 	}
@@ -413,8 +453,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != ':' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 	}
 	response++;
@@ -422,8 +462,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+	/*	if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 	}
 	response++;
@@ -431,8 +471,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		strncat(newNote->topic, response++, 1);
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 	}
 	response++;
@@ -440,8 +480,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != ':' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 
 	}
@@ -450,8 +490,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 	}
 	response++;
@@ -459,15 +499,16 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		strncat(newNote->theNote, response++, 1);
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 	}
+	response++;
 	start = clock();
 	while (*response != '}' && count < SENDBUFFERSIZE)
 	{
-		if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;
+		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;*/
 		count++;
 		response++;
 	}
@@ -599,6 +640,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 						/*strcpy_s(&listOfNotes[index - 1].Author, sizeof(listOfNotes->Author), &newNote.Author );
 						strcpy_s(&listOfNotes[index - 1].topic, sizeof(listOfNotes->Author), &newNote.topic);
 						strcpy_s(&listOfNotes[index - 1].theNote, sizeof(listOfNotes->theNote), &newNote.theNote);*/
+						saveNoteListToFileDAT(listOfNotes, NOTES_DAT_FILE);
  						produceNoteMessage(&newNote, buffer);
 						//AError
 						//produce404Error(buffer);   //Page Not Available
@@ -634,6 +676,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 
 						produce200OKHeader(buffer);
 						copyNotetoNote(listOfNotes + index - 1, &newNote);
+						saveNoteListToFileDAT(listOfNotes, NOTES_DAT_FILE);
 						/*strcpy_s(&listOfNotes[index - 1].Author, sizeof(listOfNotes->Author), &newNote.Author );
 						strcpy_s(&listOfNotes[index - 1].topic, sizeof(listOfNotes->Author), &newNote.topic);
 						strcpy_s(&listOfNotes[index - 1].theNote, sizeof(listOfNotes->theNote), &newNote.theNote);*/
@@ -672,6 +715,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 
 						produce204NoContent(buffer);
 						InitializeNote(listOfNotes + index - 1);
+						saveNoteListToFileDAT(listOfNotes, NOTES_DAT_FILE);
 					
 	
 						/*strcpy_s(&listOfNotes[index - 1].Author, sizeof(listOfNotes->Author), &newNote.Author );
@@ -741,10 +785,11 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 	else if (protocolVersion == HTTP_TWO)
 	{
 		printf("I'm sorry but we don't have HTTP 2 yet.");
-		return false;
+		return false;// this needs to change//
 	}
 	else
-		return false;
+		return false; //this needs to change//
+		return false; //this needs to change//
 }
 
 
@@ -849,6 +894,7 @@ void RecvRequestAndSendResponse(SOCKET socket_client)
 	int bytes_sent = send(socket_client, buffer, strlen(buffer), 0);
 	printf("Sent %d of %d bytes.\n", bytes_sent, (int)strlen(buffer));
 }
+
 
 void RecvUDPRequestAndSendResponse(SOCKET listen_socket)
 {
