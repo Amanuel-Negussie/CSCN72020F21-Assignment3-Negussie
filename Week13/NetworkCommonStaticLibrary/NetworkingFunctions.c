@@ -426,8 +426,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != ':' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 	}
 	response++;
@@ -435,8 +435,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		response++;
-	/*	if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 	}
 	response++;
@@ -453,8 +453,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != ':' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 	}
 	response++;
@@ -462,8 +462,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		response++;
-	/*	if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 	}
 	response++;
@@ -471,8 +471,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		strncat(newNote->topic, response++, 1);
-		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 	}
 	response++;
@@ -480,8 +480,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != ':' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 
 	}
@@ -490,8 +490,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		response++;
-		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 	}
 	response++;
@@ -499,16 +499,16 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
 		strncat(newNote->theNote, response++, 1);
-		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 	}
 	response++;
 	start = clock();
 	while (*response != '}' && count < SENDBUFFERSIZE)
 	{
-		/*if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		count++;
 		response++;
 	}
@@ -521,6 +521,7 @@ bool isUnderTime(double changeInTime, time_t start) //isUnderTime
 	double cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 	if (cpu_time_used > changeInTime)
 		return false;
+	return true;
 }
 // Method not Available
 bool produce405Error(char* buffer)
