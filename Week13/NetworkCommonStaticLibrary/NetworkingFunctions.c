@@ -12,7 +12,6 @@ Added Additional attributes on the NOTE -->Author, Topic, And Note for readable 
 Server is loaded from disk on startup, constantly updated through any put, post and delete successful methods
 so that in the event of server shutting down unexpectedly all data will be saved
 
-
 Advanced features:
 - Added synchronous multiplexing on server
 - Completed Response code and response parsing as well as 'friendly printing'
@@ -238,8 +237,7 @@ void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET socket_listen, NOTE*
 					memset(&buffer, '\0', SENDBUFFERSIZE);
 
 					handleReadAPI(&read, &buffer, listP);
-					
-				
+
 					//createPayload(buffer);
 
 					int bytes_sent = send(i, &buffer, (int)strlen(buffer), 0);
@@ -265,20 +263,16 @@ enum REQUEST_TYPE {
 
 void InitializeNote(NOTE* theListOfNotes)
 {
-	
-		memset(theListOfNotes->Author, NULL, sizeof(theListOfNotes->Author));
-		memset(theListOfNotes->topic, NULL, sizeof(theListOfNotes->topic));
-		memset(theListOfNotes->theNote, NULL, sizeof(theListOfNotes->theNote));
-	
+	memset(theListOfNotes->Author, NULL, sizeof(theListOfNotes->Author));
+	memset(theListOfNotes->topic, NULL, sizeof(theListOfNotes->topic));
+	memset(theListOfNotes->theNote, NULL, sizeof(theListOfNotes->theNote));
 }
 
-
-
-bool saveNoteListToFileDAT(NOTE* listP, char* FileName )
+bool saveNoteListToFileDAT(NOTE* listP, char* FileName)
 {
 	FILE* write_ptr;
 
-	write_ptr = fopen(FileName, "wb"); 
+	write_ptr = fopen(FileName, "wb");
 
 	if (fwrite(listP, sizeof(struct NOTE), MAX_NOTES, write_ptr) != 0)
 	{
@@ -286,16 +280,15 @@ bool saveNoteListToFileDAT(NOTE* listP, char* FileName )
 		return true;
 	}
 	else {
-		fclose(write_ptr); 
+		fclose(write_ptr);
 		return false;
 	}
 }
 
-
 bool readNoteListFromFileDAT(NOTE* listP, char* FileName)
 {
 	FILE* read_ptr;
-	read_ptr = fopen(FileName, "rb"); 
+	read_ptr = fopen(FileName, "rb");
 	if (fread(listP, sizeof(struct NOTE), MAX_NOTES, read_ptr) != 0)
 	{
 		fclose(read_ptr);
@@ -308,8 +301,6 @@ bool readNoteListFromFileDAT(NOTE* listP, char* FileName)
 	}
 }
 
-
-
 bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE* pV, int* index, char* query, NOTE* newNote)
 {
 	char requestTypeString[BUFSIZ], * rP;
@@ -319,7 +310,7 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 	char dpBuffer[BUFSIZ], * Buffer;
 	memset(dpBuffer, '\0', BUFSIZ * sizeof(char));
 	Buffer = dpBuffer;
-	
+
 	while (*response != ' ')
 		*rP++ = *response++;
 	*rP = '\0';
@@ -332,7 +323,6 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 			for (int i = 0; i < strlen(dpBuffer); i++)
 			{
 				*dP++ = dpBuffer[i];  //go through Buffer and iterate through pointer
-				
 			}
 			//Buffer = &dpBuffer ;
 			memset(dpBuffer, '\0', BUFSIZ * sizeof(char));
@@ -405,7 +395,6 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 	return true;
 }
 
-
 bool convertJSONtoNote(NOTE* newNote, char* response)
 {
 	clock_t start; //clock time adapted from https://www.geeksforgeeks.org/how-to-measure-time-taken-by-a-program-in-c/ //
@@ -471,7 +460,6 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 		if (!isUnderTime(CPU_DESIRED_TIME, start))
 			return false;
 		count++;
-
 	}
 	response++;
 	start = clock();
@@ -503,7 +491,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	return (*response == '}');
 }
 
-bool isUnderTime(double changeInTime, time_t start) //isUnderTime
+//isUnderTime Allows us to make sure that while using a while loop we're not forever waiting
+bool isUnderTime(double changeInTime, time_t start)
 {
 	time_t end = clock();
 	double cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
@@ -511,31 +500,32 @@ bool isUnderTime(double changeInTime, time_t start) //isUnderTime
 		return false;
 	return true;
 }
+
+//Complete Response Code
 // Method not Available
 bool produce405Error(char* buffer)
 {
 	const char* response =
 		"HTTP/1.1 405 Method Not Allowed\r\n"
-		"Connection: close\r\n\r\n";
+		"Connection: open\r\n\r\n";
 	return (sprintf(buffer + strlen(buffer), "%s\n\0\0", response) >= 0);
 }
-
 
 //Page Request
 bool produce404Error(char* buffer)
 {
 	const char* response =
 		"HTTP/1.1 404 Page Not Found\r\n"
-		"Connection: close\r\n\r\n";
+		"Connection: open\r\n\r\n";
 	return (sprintf(buffer + strlen(buffer), "%s\n\0\0", response) >= 0);
 }
 
 //Bad Request
-bool produce400Error(char* buffer) 
+bool produce400Error(char* buffer)
 {
 	const char* response =
 		"HTTP/1.1 400 Bad Request\r\n"
-		"Connection: close\r\n\r\n";
+		"Connection: open\r\n\r\n";
 	return (sprintf(buffer + strlen(buffer), "%s\n\0\0", response) >= 0);
 }
 void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
@@ -555,29 +545,16 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 	n = &newNote;
 	InitializeNote(n);
 	// requestLineParser: error checking here for request Type as well as protocolVersion
-	if (!requestLineParser(info, &requestType, dP, &protocolVersion, &index, q,n))
+	if (!requestLineParser(info, &requestType, dP, &protocolVersion, &index, q, n))
 	{
 		produce400Error(buffer);
 		return; //communicate to client that there is an incorrect -
 	}
 
-
-
-	//parse documentPath
-	//notes.htm then get all of the notes
-	//notes.htm/1 then you get note 1
-	//notes.htm/2 then you get note 2
-	//----> how many numbers
-	// notes.htm/
-	//folder //
+	//parse message
 
 	if (protocolVersion == HTTP_ONE_POINT_ONE)
 	{
-		//PROTOCOL VERSION HTTP 1.1
-
-		//document path is the web page we're going to/ more importantly it's the type of data we want
-		//requestType is either Get Get All Collections Set Put Delete
-
 		if (memcmp(documentPath, "/note", sizeof("/note")) == 0 || memcmp(documentPath, "/note/", sizeof("/note/")) == 0)
 		{
 			//NOTE* theNote = (NOTE*) malloc(sizeof(NOTE));
@@ -590,18 +567,18 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				if (index > 0)  //GET ONE
 				{
 					//accessing the data by index value
-					
+
 					if (!getNote(index, listOfNotes, &theNote))
 					{
 						//AError
 						produce404Error(buffer);   //Page Not Available
-						
+
 						//free(theNote);
 						return; //404 error
 					}
 					else
 					{
-						produce200OKHeader(buffer); 
+						produce200OKHeader(buffer);
 						produceNoteMessage(&theNote, buffer);
 						produceNoteMessageJSON(&theNote, buffer, index);
 						//free(theNote);
@@ -612,9 +589,8 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				{
 					produce404Error(buffer);  //Page Not Available
 					return;
-					//produce404Error(buffer) 
+					//produce404Error(buffer)
 					//return;
-
 				}
 				break;
 			case POST:
@@ -622,24 +598,16 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				{
 					//accessing the data by index value
 
-					if (!isNoteAvailable(listOfNotes+index-1)) //if there is No Note you can Post.
+					if (!isNoteAvailable(listOfNotes + index - 1)) //if there is No Note you can Post.
 					{
-
 						produce200OKHeader(buffer);
 						copyNotetoNote(listOfNotes + index - 1, &newNote);
-						/*strcpy_s(&listOfNotes[index - 1].Author, sizeof(listOfNotes->Author), &newNote.Author );
-						strcpy_s(&listOfNotes[index - 1].topic, sizeof(listOfNotes->Author), &newNote.topic);
-						strcpy_s(&listOfNotes[index - 1].theNote, sizeof(listOfNotes->theNote), &newNote.theNote);*/
 						saveNoteListToFileDAT(listOfNotes, NOTES_DAT_FILE);
- 						produceNoteMessage(&newNote, buffer);
-						//AError
-						//produce404Error(buffer);   //Page Not Available
-						//free(theNote);
-						return; //404 error
+						produceNoteMessage(&newNote, buffer);
+						return;
 					}
 					else
 					{
-						//memccpy((listOfNotes + index - 1), &theNote, '\0', sizeof(NOTE));
 						produce405Error(buffer);   //Method Not Available
 						return;
 					}
@@ -647,13 +615,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				else   //GET ALL
 				{
 					produce405Error(buffer);  //Page Not Available
-
-
-					
 					return;
-					//produce404Error(buffer) 
-					//return;
-
 				}
 				break;
 			case PUT:
@@ -663,22 +625,16 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 
 					if (isNoteAvailable(listOfNotes + index - 1)) //if there is No Note you can Post.
 					{
-
 						produce200OKHeader(buffer);
 						copyNotetoNote(listOfNotes + index - 1, &newNote);
 						saveNoteListToFileDAT(listOfNotes, NOTES_DAT_FILE);
-						/*strcpy_s(&listOfNotes[index - 1].Author, sizeof(listOfNotes->Author), &newNote.Author );
-						strcpy_s(&listOfNotes[index - 1].topic, sizeof(listOfNotes->Author), &newNote.topic);
-						strcpy_s(&listOfNotes[index - 1].theNote, sizeof(listOfNotes->theNote), &newNote.theNote);*/
+
 						produceNoteMessage(&newNote, buffer);
-						//AError
-						//produce404Error(buffer);   //Page Not Available
-						//free(theNote);
+
 						return; //404 error
 					}
 					else
 					{
-						//memccpy((listOfNotes + index - 1), &theNote, '\0', sizeof(NOTE));
 						produce405Error(buffer);   //Method Not Available
 						return;
 					}
@@ -687,12 +643,9 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				{
 					produce405Error(buffer);  //Page Not Available
 
-
-
 					return;
-					//produce404Error(buffer) 
+					//produce404Error(buffer)
 					//return;
-
 				}
 				break;
 			case DELETE_IT:
@@ -702,24 +655,13 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 
 					if (isNoteAvailable(listOfNotes + index - 1)) //if there is No Note you can Post.
 					{
-
 						produce204NoContent(buffer);
 						InitializeNote(listOfNotes + index - 1);
 						saveNoteListToFileDAT(listOfNotes, NOTES_DAT_FILE);
-					
-	
-						/*strcpy_s(&listOfNotes[index - 1].Author, sizeof(listOfNotes->Author), &newNote.Author );
-						strcpy_s(&listOfNotes[index - 1].topic, sizeof(listOfNotes->Author), &newNote.topic);
-						strcpy_s(&listOfNotes[index - 1].theNote, sizeof(listOfNotes->theNote), &newNote.theNote);*/
-					
-						//AError
-						//produce404Error(buffer);   //Page Not Available
-						//free(theNote);
 						return; //404 error
 					}
 					else
 					{
-						//memccpy((listOfNotes + index - 1), &theNote, '\0', sizeof(NOTE));
 						produce405Error(buffer);   //Method Not Available
 						return;
 					}
@@ -728,12 +670,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				{
 					produce405Error(buffer);  //Page Not Available
 
-
-
 					return;
-					//produce404Error(buffer) 
-					//return;
-
 				}
 				break;
 			}
@@ -746,10 +683,8 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 			case GET:
 				if (index > 0)  //GET ONE
 				{
-					//accessing the data by index value
-					//produce404Error(buffer) 
-					//return;
-
+					produce405Error(buffer);
+					return;
 				}
 				else   //GET ALL
 				{
@@ -762,34 +697,35 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				}
 				break;
 			default:
-
-
+				produce405Error(buffer);
+				return;
 				break;
 			}
 		}
 		else
 		{
-			produce405Error(buffer); 
+			produce405Error(buffer);
 			return;
 		}
 	}
 	else if (protocolVersion == HTTP_TWO)
 	{
-		printf("I'm sorry but we don't have HTTP 2 yet.");
-		return false;// this needs to change//
+		produce405Error(buffer); //coming soon
+		return;
 	}
 	else
-		return false; //this needs to change//
-		return false; //this needs to change//
+	{
+		produce404Error(buffer);
+		return;
+	}
 }
-
 
 bool produce204NoContent(char* buffer)
 {
 	const char* response =
 		"HTTP/1.1 204 No Content\r\n"
-		"Connection: close\r\n"
-		"Content-Type: text/plain\r\n\r\n";
+		"Connection: open\r\n"
+		"Content-Type: text/plain and JSON\r\n\r\n";
 	return (sprintf(buffer + strlen(buffer), "%s\n\0\0", response) >= 0);
 }
 bool isNoteAvailable(NOTE* theNote)
@@ -805,7 +741,7 @@ bool isNoteAvailable(NOTE* theNote)
 
 void copyNotetoNote(NOTE* a, NOTE* b)
 {
-	if (memcmp(a,b,sizeof(NOTE)) == 0)
+	if (memcmp(a, b, sizeof(NOTE)) == 0)
 		return;
 	strcpy_s(a->Author, sizeof(a->Author), b->Author);
 	strcpy_s(a->topic, sizeof(a->topic), b->topic);
@@ -828,62 +764,58 @@ bool produceNoteMessage(NOTE* theNote, char* theMessage)  //format
 	return (sprintf(theMessage + strlen(theMessage), "Author:\t%s\r\nTopic:\t%s\r\nMessage:%5s\r\nTime:%8s\r\n\0\0", theNote->Author, &theNote->topic, &theNote->theNote, ctime(&currentTime)) >= 0);
 }
 
-
 bool produceNoteMessageJSON(NOTE* theNote, char* theMessage, int i)  //format
 {
 	return (sprintf(theMessage + strlen(theMessage), "{\r\n\id:\t%d,\r\nAuthor:\t\"%s\",\r\nTopic:\t\"%s\",\r\nNote:\t\"%s\"\r\n},\r\n", i,
 		theNote->Author, theNote->topic, theNote->theNote) < 0);
 }
 
-	
-
 bool produceAllNoteMessage(NOTE* theListOfNotes, char* theMessage) //format
 {
-	time_t currentTime; 
-	
+	time_t currentTime;
+
 	for (int i = 0; i < MAX_NOTES; i++)
 	{
 		if (isNoteAvailable(theListOfNotes + i))
-			if (sprintf(theMessage + strlen(theMessage), "Note #%i\nAuthor:\t%s\r\nTopic:\t%s\r\nMessage:%15s\n\n", i+1, (theListOfNotes + i)->Author, (theListOfNotes + i)->topic, (theListOfNotes + i)->theNote) < 0)
+			if (sprintf(theMessage + strlen(theMessage), "Note #%i\nAuthor:\t%s\r\nTopic:\t%s\r\nMessage:%15s\n\n", i + 1, (theListOfNotes + i)->Author, (theListOfNotes + i)->topic, (theListOfNotes + i)->theNote) < 0)
 			{
 				fprintf(stderr, "Unable to add to the buffer.");
 				exit(1);
 			}
 	}
-			
-	currentTime = time(NULL);
-	return (sprintf(theMessage + strlen(theMessage), "Time:%9s\r\n\r\n\0\0", ctime(&currentTime))>=0);
-}
 
+	currentTime = time(NULL);
+	return (sprintf(theMessage + strlen(theMessage), "Time:%9s\r\n\r\n\0\0", ctime(&currentTime)) >= 0);
+}
 
 bool produceAllNoteMessageJSON(NOTE* theListOfNotes, char* theMessage)
 {
-	time_t currentTime; 
-	if (sprintf(theMessage + strlen(theMessage), "{\r\n\Notes\: [\r\n")<0)
+	time_t currentTime;
+	if (sprintf(theMessage + strlen(theMessage), "{\r\n\Notes\: [\r\n") < 0)
 		return false;
 	for (int i = 0; i < MAX_NOTES; i++)
 	{
-		if (isNoteAvailable(theListOfNotes+i))
-		if (sprintf(theMessage + strlen(theMessage), "{\r\n\id:\t%d,\r\nAuthor:\t\"%s\",\r\nTopic:\t\"%s\",\r\nNote:\t\"%s\"\r\n},\r\n",i+1, (theListOfNotes + i)->Author, (theListOfNotes + i)->topic, (theListOfNotes + i)->theNote) < 0)
-			return false;
+		if (isNoteAvailable(theListOfNotes + i))
+			if (sprintf(theMessage + strlen(theMessage), "{\r\n\id:\t%d,\r\nAuthor:\t\"%s\",\r\nTopic:\t\"%s\",\r\nNote:\t\"%s\"\r\n},\r\n", i + 1, (theListOfNotes + i)->Author, (theListOfNotes + i)->topic, (theListOfNotes + i)->theNote) < 0)
+				return false;
 	}
-	if (sprintf(theMessage + strlen(theMessage)-1, "\r\n]\r\n}\r\n") < 0)
+	if (sprintf(theMessage + strlen(theMessage) - 1, "\r\n]\r\n}\r\n") < 0)
 		return false;
 }
 bool produce200OKHeader(char* buffer)
 {
 	const char* response =
 		"HTTP/1.1 200 OK\r\n"
-		"Connection: close\r\n"
-		"Content-Type: text/plain\r\n\r\n";
+		"Connection: open\r\n"
+		"Content-Type: text/plain and JSON\r\n\r\n";
 	return (sprintf(buffer + strlen(buffer), "%s\n\0\0", response) >= 0);
 }
 void createPayload(char* buffer)
 {
 	const char* response =
 		"HTTP/1.1 200 OK\r\n"
-		"Connection: close\r\n"
-		"Content-Type: text/plain\r\n\r\n"
+		"Connection: open\r\n"
+		"Content-Type: text/plain and JSON\r\n\r\n"
 		"Local time is: ";
 
 	time_t timer;
@@ -908,34 +840,6 @@ void RecvRequestAndSendResponse(SOCKET socket_client)
 	printf("Sending response...\n");
 	int bytes_sent = send(socket_client, buffer, strlen(buffer), 0);
 	printf("Sent %d of %d bytes.\n", bytes_sent, (int)strlen(buffer));
-}
-
-
-void RecvUDPRequestAndSendResponse(SOCKET listen_socket)
-{
-	struct sockaddr_in cliaddr;
-	char buffer[SENDBUFFERSIZE];
-
-	int clientLength = sizeof(cliaddr);  //len is value/resuslt
-
-	int bytesReceived = recvfrom(listen_socket,
-		buffer,
-		SENDBUFFERSIZE,
-		0,
-		(struct sockaddr*)&cliaddr,
-		&clientLength);
-	buffer[bytesReceived] = '\0';	// no guarantee the payload will be NULL terminated
-	printf("\nClient sent : %s\n", buffer);
-
-	createPayload(buffer);
-
-	sendto(listen_socket,
-		buffer,
-		strlen(buffer),
-		0,
-		(const struct sockaddr*)&cliaddr,
-		clientLength);
-	printf("Response message sent.\n");
 }
 
 void CloseSocketConnection(SOCKET this_socket)
