@@ -31,6 +31,7 @@ client can also work through console in a friendly manner
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 #include "NetworkingFunctions.h"
+#include "ServerFunctions.h"
 
 #define LISTENINGPORT   "8080"      //needs to be a string
 

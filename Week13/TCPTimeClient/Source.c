@@ -44,36 +44,6 @@ int main(void)
 	printf("Creating socket and connect...\n");
 	SOCKET peer_socket = CreateAndConnectRemoteSocket(peer_address);
 
-	//provide menu 
-	/*
-	1. View A Note 
-	2. View All Notes 
-	3. Update An Existing Note 
-	4. Post A New Note 
-	5. Delete An Existing Note 
-	q: q is for quit
-	*/
-
-	/*
-	Ask User what they want to choose. 
-	Receive input. 
-	If 1) 
-	ask them what note number 
-	send request
-	If 2) 
-	send request
-	If 3)
-	ask them what note number
-	ask them Author, Topic, and Note
-	If 4) 
-	ask them what note number, 
-	ask them what Author, Topic and Note
-	send request 
-	If 5) 
-	ask them what note number
-	send request
-	*/
-
 	int response;
 
 	int index;

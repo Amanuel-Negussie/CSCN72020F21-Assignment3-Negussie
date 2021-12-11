@@ -63,10 +63,17 @@ struct NOTE {
 	char theNote[NOTE_LENGTH];
 } typedef NOTE;
 
-//file saving i/o 
-bool saveNoteListToFileDAT(NOTE*, char *);
-bool readNoteListFromFileDAT(NOTE*, char*); 
+enum PROTOCOL_TYPE {
+	HTTP_ONE_POINT_ONE,
+	HTTP_TWO
+}typedef PROTOCOL_TYPE;
 
+enum REQUEST_TYPE {
+	GET,
+	POST,
+	PUT,
+	DELETE_IT,
+}typedef REQUEST_TYPE;
 
 bool produceAllNoteMessageJSON(NOTE* theListOfNotes, char* theMessage);
 
@@ -76,9 +83,7 @@ bool produceNoteMessageJSON(NOTE*, char*,int);  //format
 //common
 void InitializeWindowsSockets();
 void InitializeNote(NOTE*);  //passing an array of memset Notes and getting Notes
-bool createNote(NOTE*); //make sure that you can create NOTE
-bool isNoteAvailable(NOTE* theNote);
-void copyNotetoNote(NOTE* a, NOTE* b);  //copy Note to Note
+
 void CloseSocketConnection(SOCKET);
 void ShutdownWindowsSockets();
 
@@ -87,23 +92,18 @@ bool produceAllNoteMessage(NOTE*, char*); //format
 bool produceNoteMessage(NOTE*, char*);  //format
 bool convertJSONtoNote(NOTE* newNote, char* response); //convert JSON to Note
 bool isUnderTime(double changeInTime, time_t start); //isUnderTime
-bool produce200OKHeader(char*);
-bool produce204NoContent(char*);
-bool produce404Error(char*); //404 error
-bool produce405Error(char*); //405 ERROR -->Method Not Allowed
-bool produce400Error(char*); //400 Bad Request
 
 //server only
 struct addrinfo* ConfigureLocalAddress(char*, PROTOCOL);
 SOCKET CreateBindListeningSocket(struct addrinfo*);
 void StartListeningForConnections(SOCKET);
 SOCKET WaitForAndAcceptConnection(SOCKET);
-void WaitForAndAcceptAndHandleMultiplexedConnections(SOCKET, NOTE*);
+
 void createPayload(char*);
-void RecvRequestAndSendResponse(SOCKET);
-void RecvUDPRequestAndSendResponse(SOCKET);
-void handleReadAPI(char*, char*, NOTE*);
-bool requestLineParser(char*, enum REQUEST_TYPE*, char*, enum PROTOCOL_TYPE*, int*, char*, NOTE*);
+
+
+
+
 
 //client only
 struct addrinfo* ConfigureRemoteAddress(char*, char*, PROTOCOL);
