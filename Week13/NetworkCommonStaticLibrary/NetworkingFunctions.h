@@ -75,21 +75,15 @@ enum REQUEST_TYPE {
 	DELETE_IT,
 }typedef REQUEST_TYPE;
 
-bool produceAllNoteMessageJSON(NOTE* theListOfNotes, char* theMessage);
-
-bool produceNoteMessageJSON(NOTE*, char*,int);  //format
 
 
 //common
 void InitializeWindowsSockets();
 void InitializeNote(NOTE*);  //passing an array of memset Notes and getting Notes
-
 void CloseSocketConnection(SOCKET);
 void ShutdownWindowsSockets();
 
-bool getNote(int , NOTE* , NOTE* ); //note
-bool produceAllNoteMessage(NOTE*, char*); //format
-bool produceNoteMessage(NOTE*, char*);  //format
+
 bool convertJSONtoNote(NOTE* newNote, char* response); //convert JSON to Note
 bool isUnderTime(double changeInTime, time_t start); //isUnderTime
 
@@ -98,12 +92,6 @@ struct addrinfo* ConfigureLocalAddress(char*, PROTOCOL);
 SOCKET CreateBindListeningSocket(struct addrinfo*);
 void StartListeningForConnections(SOCKET);
 SOCKET WaitForAndAcceptConnection(SOCKET);
-
-void createPayload(char*);
-
-
-
-
 
 //client only
 struct addrinfo* ConfigureRemoteAddress(char*, char*, PROTOCOL);

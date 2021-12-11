@@ -156,8 +156,6 @@ void StartListeningForConnections(SOCKET socket_listen)
 }
 
 
-
-
 void InitializeNote(NOTE* theListOfNotes)
 {
 	memset(theListOfNotes->Author, NULL, sizeof(theListOfNotes->Author));
@@ -271,46 +269,7 @@ bool isUnderTime(double changeInTime, time_t start)
 	return true;
 }
 
-
-bool produce200OKHeader(char* buffer)
-{
-	const char* response =
-		"HTTP/1.1 200 OK\r\n"
-		"Connection: open\r\n"
-		"Content-Type: text/plain and JSON\r\n\r\n";
-	return (sprintf(buffer + strlen(buffer), "%s\n\0\0", response) >= 0);
-}
-void createPayload(char* buffer)
-{
-	const char* response =
-		"HTTP/1.1 200 OK\r\n"
-		"Connection: open\r\n"
-		"Content-Type: text/plain and JSON\r\n\r\n"
-		"Local time is: ";
-
-	time_t timer;
-	time(&timer);
-	char* time_msg = ctime(&timer);
-
-	sprintf(buffer, "%s %s\n\0\0", response, time_msg);
-}
-
-void RecvRequestAndSendResponse(SOCKET socket_client)
-{
-	printf("Reading request...\n");
-	char request[SENDBUFFERSIZE];
-	int bytes_received = recv(socket_client, request, SENDBUFFERSIZE, 0);
-	printf("Received %d bytes: \n", bytes_received);
-	printf("%.*s\n", bytes_received, request);      //the %.*s makes sure we print exactly as many chars as was received (regardless of null termination)
-
-	printf("building response\n");
-	char buffer[SENDBUFFERSIZE];
-	createPayload(buffer);
-
-	printf("Sending response...\n");
-	int bytes_sent = send(socket_client, buffer, strlen(buffer), 0);
-	printf("Sent %d of %d bytes.\n", bytes_sent, (int)strlen(buffer));
-}
+//Closing Sockets and Cleanup
 
 void CloseSocketConnection(SOCKET this_socket)
 {
