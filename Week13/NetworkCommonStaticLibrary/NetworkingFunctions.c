@@ -1,5 +1,30 @@
-//cscn72020 - week12 - a simple example of a networked service.
-//steveh - nov 2021
+/*
+CSCN72020-Assignment3-Amanuel Negussie Due Date: December 10th, 2021
+Utilized Professor Steve Hendrikse's existing library as a starting point https://github.com/ProfessorSteveH/CSCN72020F21
+Incorporated Multiplexing through utilizing video from class
+Utilized the Textbook Hands On Network Programming with C' by Lewis Van Winkle
+The goal of the Client:
+Was to be able to have a console mode program that was menu driven allowing the user to exercise all the methods on the server
+GET, GET COLLECTION, PUT, POST, AND DELETE
+The goal of the Server:
+Have two URIs which I called /note/? for GET, PUT, POST, AND DELETE and second URI I called /notes for GET COLLECTION
+Added Additional attributes on the NOTE -->Author, Topic, And Note for readable text as well
+Server is loaded from disk on startup, constantly updated through any put, post and delete successful methods
+so that in the event of server shutting down unexpectedly all data will be saved
+
+
+Advanced features:
+- Added synchronous multiplexing on server
+- Completed Response code and response parsing as well as 'friendly printing'
+
+Areas of Improvement:
+- Work on GET method filtering
+- Add Authentication
+- Work on GUI implementation
+
+client can work on WSL directly connecting to netcat 127.0.0.1 port 8080 and using request headers with request body in the form of JSON
+client can also work through console in a friendly manner
+*/
 
 // to create a library for use in multiple projects, follow:
 //
@@ -248,7 +273,6 @@ void InitializeNote(NOTE* theListOfNotes)
 }
 
 
-//bool readFromFileDAT(NOTE* listP, char);
 
 bool saveNoteListToFileDAT(NOTE* listP, char* FileName )
 {
@@ -376,42 +400,6 @@ bool requestLineParser(char* response, REQUEST_TYPE* rT, char* dP, PROTOCOL_TYPE
 	{
 		if (!convertJSONtoNote(newNote, response))
 			return false;
-
-
-		/*while (*response != ':')
-		{
-			response++;
-		}
-		response++;
-		while (*response != '"')
-			response++;
-		response++; 
-		while (*response != '"')
-			strncat(newNote->Author, response++, 1);
-		response++; 
-		while (*response != ':')
-			response++;
-		response++;
-		while (*response != '"')
-			response++;
-		response++;
-		while (*response != '"')
-			strncat(newNote->topic, response++, 1);
-		response++;
-		while (*response != ':')
-			response++;
-		response++;
-		while (*response != '"')
-			response++;
-		response++;
-		while (*response != '"')
-			strncat(newNote->theNote, response++, 1);
-		response++;
-		*/
-
-		
-
-
 	}
 
 	return true;
@@ -443,8 +431,8 @@ bool convertJSONtoNote(NOTE* newNote, char* response)
 	start = clock();
 	while (*response != '"' && count < SENDBUFFERSIZE)
 	{
-	/*	if (!isUnderTime(CPU_DESIRED_TIME, start))
-			return false;*/
+		if (!isUnderTime(CPU_DESIRED_TIME, start))
+			return false;
 		strncat(newNote->Author, response++, 1);
 		count++;
 	}
@@ -615,6 +603,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 					{
 						produce200OKHeader(buffer); 
 						produceNoteMessage(&theNote, buffer);
+						produceNoteMessageJSON(&theNote, buffer, index);
 						//free(theNote);
 						return;
 					}
@@ -838,6 +827,15 @@ bool produceNoteMessage(NOTE* theNote, char* theMessage)  //format
 	currentTime = time(NULL);
 	return (sprintf(theMessage + strlen(theMessage), "Author:\t%s\r\nTopic:\t%s\r\nMessage:%5s\r\nTime:%8s\r\n\0\0", theNote->Author, &theNote->topic, &theNote->theNote, ctime(&currentTime)) >= 0);
 }
+
+
+bool produceNoteMessageJSON(NOTE* theNote, char* theMessage, int i)  //format
+{
+	return (sprintf(theMessage + strlen(theMessage), "{\r\n\id:\t%d,\r\nAuthor:\t\"%s\",\r\nTopic:\t\"%s\",\r\nNote:\t\"%s\"\r\n},\r\n", i,
+		theNote->Author, theNote->topic, theNote->theNote) < 0);
+}
+
+	
 
 bool produceAllNoteMessage(NOTE* theListOfNotes, char* theMessage) //format
 {

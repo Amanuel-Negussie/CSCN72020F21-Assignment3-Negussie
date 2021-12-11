@@ -57,9 +57,6 @@ bool ReceiveNoteResponse(NOTE* theNote)
 	scanf_s("%[^\n]%*c", theNote->topic, (unsigned int) sizeof(theNote->topic));
 	printf("Please Enter the Note:   ");
 	scanf_s("%[^\n]%*c", theNote->theNote, (unsigned int)sizeof(theNote->theNote));
-	/*fgets(theNote->topic, TOPIC_LENGTH, stdin);
-	fgets(theNote->theNote, NOTE_LENGTH, stdin);*/
-	//scanf_s("%s", theNote->Author, sizeof(theNote->Author));
 }
 
 //Creating REQUESTS
