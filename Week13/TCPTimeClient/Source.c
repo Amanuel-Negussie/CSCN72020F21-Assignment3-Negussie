@@ -69,6 +69,7 @@ int main(void)
 			break;
 		case 2:  //View All Notes
 			createGETCollectionRequestMessage(&message);
+
 			break;
 		case 3: //Update An Existing Note
 			while (!AskForNoteIndex(&index));

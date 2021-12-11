@@ -39,7 +39,7 @@ bool saveNoteListToFileDAT(NOTE*, char *);
 bool readNoteListFromFileDAT(NOTE*, char*); 
 
 
-
+bool produceAllNoteMessageJSON(NOTE* theListOfNotes, char* theMessage);
 
 
 //common

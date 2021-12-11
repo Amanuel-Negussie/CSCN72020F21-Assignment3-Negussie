@@ -766,6 +766,7 @@ void handleReadAPI(char* info, char* buffer, NOTE* listOfNotes)
 				{
 					produce200OKHeader(buffer);
 					produceAllNoteMessage(listOfNotes, buffer);
+					produceAllNoteMessageJSON(listOfNotes, buffer);
 					return;
 
 					//code for get ALL
@@ -856,6 +857,21 @@ bool produceAllNoteMessage(NOTE* theListOfNotes, char* theMessage) //format
 	return (sprintf(theMessage + strlen(theMessage), "Time:%9s\r\n\r\n\0\0", ctime(&currentTime))>=0);
 }
 
+
+bool produceAllNoteMessageJSON(NOTE* theListOfNotes, char* theMessage)
+{
+	time_t currentTime; 
+	if (sprintf(theMessage + strlen(theMessage), "{\r\n\Notes\: [\r\n")<0)
+		return false;
+	for (int i = 0; i < MAX_NOTES; i++)
+	{
+		if (isNoteAvailable(theListOfNotes+i))
+		if (sprintf(theMessage + strlen(theMessage), "{\r\n\id:\t%d,\r\nAuthor:\t\"%s\",\r\nTopic:\t\"%s\",\r\nNote:\t\"%s\"\r\n},\r\n",i+1, (theListOfNotes + i)->Author, (theListOfNotes + i)->topic, (theListOfNotes + i)->theNote) < 0)
+			return false;
+	}
+	if (sprintf(theMessage + strlen(theMessage)-1, "\r\n]\r\n}\r\n") < 0)
+		return false;
+}
 bool produce200OKHeader(char* buffer)
 {
 	const char* response =
