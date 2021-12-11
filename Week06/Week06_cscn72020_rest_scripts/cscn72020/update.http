@@ -1,7 +1,0 @@
-// to get the entire collection, use GET on the base api
-PUT http://172.16.10.139:5000/posts/3  HTTP/1.1
-Content-Type: application/json
-
-{
-   "post":  "now just some random posting in the middle of the collection"
-}
